@@ -529,9 +529,26 @@ function renderTourStep() {
 
   const step = tourSteps[currentTourStep];
   const target = document.getElementById(step.targetId);
+  const card = document.getElementById('tourCard');
+
   if (target) {
     target.classList.add('tour-focus');
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Dynamic placement: Check if target is in top or bottom half of screen
+    setTimeout(() => {
+      const rect = target.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // If target is in the bottom half, place tour card at top so it doesn't overlap
+      if (rect.top > viewportHeight / 2) {
+        card.classList.remove('tour-card-bottom');
+        card.classList.add('tour-card-top');
+      } else {
+        card.classList.remove('tour-card-top');
+        card.classList.add('tour-card-bottom');
+      }
+    }, 150);
   }
 
   document.getElementById('tourStepBadge').textContent = `Step ${currentTourStep + 1} of ${tourSteps.length}`;
@@ -546,6 +563,7 @@ function renderTourStep() {
   document.getElementById('tourPrevBtn').classList.toggle('hidden', currentTourStep === 0);
   document.getElementById('tourNextBtn').textContent = currentTourStep === tourSteps.length - 1 ? "Let's Lift! 🚀" : "Next →";
 }
+
 
 function nextTourStep() {
   if (currentTourStep < tourSteps.length - 1) {
