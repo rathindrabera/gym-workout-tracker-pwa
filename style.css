@@ -4,6 +4,7 @@ body {
   color: #e2e8f0;
 }
 
+/* Neon Glow Accents */
 .neon-border {
   border-color: rgba(56, 189, 248, 0.3);
 }
@@ -12,6 +13,7 @@ body {
   box-shadow: 0 0 20px rgba(56, 189, 248, 0.12);
 }
 
+/* Form Inputs Styling */
 input,
 select,
 textarea {
@@ -20,11 +22,21 @@ textarea {
   color: #fff;
 }
 
+/* Hide Scrollbar for clean tabs */
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
 
-/* Semi-transparent dark overlay */
+/* --- Flaticon Icon Alignment Fixes --- */
+i.fi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* --- Interactive Demo Tour Overlay --- */
 .tour-backdrop {
   position: fixed;
   inset: 0;
@@ -32,7 +44,6 @@ textarea {
   z-index: 80;
 }
 
-/* Dynamic floating card */
 .tour-card-container {
   position: fixed;
   left: 16px;
@@ -58,7 +69,7 @@ textarea {
   bottom: auto;
 }
 
-/* Target element spotlight */
+/* Tour Target Element Spotlight */
 .tour-focus {
   position: relative !important;
   z-index: 85 !important;
