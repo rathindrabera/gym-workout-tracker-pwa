@@ -1,0 +1,56 @@
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #0b0f17;
+  color: #e2e8f0;
+}
+
+.neon-border {
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.neon-glow {
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.12);
+}
+
+input, select, textarea {
+  background: #161f2e;
+  border: 1px solid #2d3b55;
+  color: #fff;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tour Overlay Fixed Layers */
+.tour-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.65);
+  z-index: 80;
+}
+
+.tour-card-container {
+  position: fixed;
+  bottom: 20px;
+  left: 16px;
+  right: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: #161f2e;
+  border: 2px solid #38bdf8;
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  z-index: 100;
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.9), 0 0 25px rgba(56, 189, 248, 0.25);
+}
+
+/* Spotlight that stays BELOW the tour card and does not displace elements */
+.tour-focus {
+  position: relative !important;
+  z-index: 85 !important;
+  outline: 3px solid #38bdf8 !important;
+  outline-offset: 4px;
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.7) !important;
+  border-radius: 1rem;
+}
