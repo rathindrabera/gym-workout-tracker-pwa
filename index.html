@@ -15,22 +15,25 @@
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #e2e8f0; }
     .neon-border { border-color: rgba(56, 189, 248, 0.3); }
-    .neon-glow { box-shadow: 0 0 20px rgba(56, 189, 248, 0.12); }
+    .neon-glow { box-shadow: 0 0 20px rgba(56, 189, 248, 0.15); }
     input, select, textarea { background: #161f2e; border: 1px solid #2d3b55; color: #fff; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
+    
+    /* Highlighted element in interactive demo */
     .tour-focus {
       position: relative !important;
       z-index: 55 !important;
-      box-shadow: 0 0 0 4px #38bdf8, 0 0 25px rgba(56, 189, 248, 0.7) !important;
+      box-shadow: 0 0 0 3px #38bdf8, 0 0 25px rgba(56, 189, 248, 0.6) !important;
       border-radius: 1rem !important;
       background-color: #111827 !important;
+      transition: all 0.25s ease-in-out;
     }
   </style>
 </head>
 <body class="min-h-screen pb-24 relative">
 
   <!-- Top Header -->
-  <header class="p-4 bg-slate-900/90 backdrop-blur sticky top-0 z-40 border-b border-slate-800 flex justify-between items-center">
+  <header class="p-4 bg-slate-900/95 sticky top-0 z-40 border-b border-slate-800 flex justify-between items-center">
     <div class="flex items-center gap-2">
       <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 to-emerald-400 flex items-center justify-center font-extrabold text-slate-950 text-sm">
         IF
@@ -244,33 +247,33 @@
   </div>
 
   <!-- 3. INTERACTIVE FIRST-TIME DEMO TOUR OVERLAY -->
-  <div id="tourModal" class="fixed inset-0 z-[70] hidden flex flex-col justify-end p-4 pb-8">
-    <!-- Dark Backdrop -->
-    <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm -z-10" onclick="endTour()"></div>
+  <div id="tourModal" class="fixed inset-0 z-50 hidden flex flex-col justify-end p-4 pb-8 pointer-events-none">
+    <!-- Soft Dimmer Backdrop (NO BLUR so the app stays sharp and visible behind) -->
+    <div class="fixed inset-0 bg-slate-950/60 pointer-events-auto" onclick="endTour()"></div>
 
-    <!-- Floating Tour Card -->
-    <div class="bg-slate-900 border-2 border-sky-400 w-full max-w-md mx-auto rounded-2xl p-5 shadow-2xl space-y-4 neon-glow">
+    <!-- Solid Elevated Floating Tour Card -->
+    <div style="background-color: #161f2e;" class="relative z-10 border-2 border-sky-400 w-full max-w-md mx-auto rounded-2xl p-5 shadow-2xl space-y-4 pointer-events-auto neon-glow">
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2">
           <span class="text-xs bg-sky-500/20 text-sky-300 font-extrabold px-2.5 py-1 rounded-full border border-sky-400/40" id="tourStepBadge">Step 1 of 4</span>
           <span class="text-xs text-slate-300 font-bold" id="tourHeading">Interactive Guide</span>
         </div>
-        <button onclick="endTour()" class="text-xs text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded-lg">&times; Skip</button>
+        <button onclick="endTour()" class="text-xs text-slate-300 hover:text-white px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg font-semibold border border-slate-700">&times; Skip</button>
       </div>
 
       <p class="text-sm font-medium text-slate-100 leading-relaxed" id="tourText">
         Welcome to IronForge! Let's take a quick 30-second walkthrough to set up your workouts and vitals.
       </p>
 
-      <div class="flex items-center justify-between pt-1 border-t border-slate-800">
-        <button onclick="prevTourStep()" id="tourPrevBtn" class="px-3.5 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-700 hidden">
+      <div class="flex items-center justify-between pt-2 border-t border-slate-700/60">
+        <button onclick="prevTourStep()" id="tourPrevBtn" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold border border-slate-700 hidden">
           &larr; Back
         </button>
         <div class="flex gap-1.5" id="tourDots">
           <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
-          <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
-          <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
-          <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
         </div>
         <button onclick="nextTourStep()" id="tourNextBtn" class="px-5 py-2.5 bg-gradient-to-r from-sky-400 to-emerald-400 text-slate-950 rounded-xl text-xs font-extrabold shadow-lg shadow-sky-500/30 active:scale-95 transition-all">
           Next &rarr;
@@ -807,7 +810,6 @@
     }
 
     function renderTourStep() {
-      // Clear previous spotlights
       document.querySelectorAll('.tour-focus').forEach(el => el.classList.remove('tour-focus'));
 
       const step = tourSteps[currentTourStep];
@@ -821,10 +823,9 @@
       document.getElementById('tourHeading').textContent = step.title;
       document.getElementById('tourText').textContent = step.text;
 
-      // Update Dots
       const dotsContainer = document.getElementById('tourDots');
       dotsContainer.innerHTML = tourSteps.map((_, i) => `
-        <span class="w-2.5 h-2.5 rounded-full ${i === currentTourStep ? 'bg-sky-400' : 'bg-slate-700'}"></span>
+        <span class="w-2.5 h-2.5 rounded-full ${i === currentTourStep ? 'bg-sky-400' : 'bg-slate-600'}"></span>
       `).join('');
 
       document.getElementById('tourPrevBtn').classList.toggle('hidden', currentTourStep === 0);
@@ -860,7 +861,6 @@
     updateProgress();
     calcMacros();
 
-    // Check first-time walkthrough
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => startDemoTour(false), 500);
     });
