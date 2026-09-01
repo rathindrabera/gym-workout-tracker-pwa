@@ -472,11 +472,22 @@ function renderAnalytics() {
 
 function calcMacros() {
   const w = parseFloat(document.getElementById('userWeight').value) || 75;
+  const targetW = parseFloat(document.getElementById('targetWeight').value) || 70;
+  const deficit = parseFloat(document.getElementById('userDeficit').value) || 450;
+
+  // Persist values in user's isolated local storage
   localStorage.setItem('ironforge_weight', w);
-  const cals = Math.round((w * 30) - 450);
-  const prot = Math.round(w * 2.0);
-  document.getElementById('calVal').textContent = `${cals} kcal`;
-  document.getElementById('protVal').textContent = `${prot}g`;
+  localStorage.setItem('ironforge_target_weight', targetW);
+  localStorage.setItem('ironforge_deficit', deficit);
+
+  // Maintenance baseline ≈ (bodyweight in kg * 33) kcal
+  const maintenance = Math.round(w * 33);
+  const targetCalories = Math.max(1200, maintenance - deficit);
+  const protein = Math.round(w * 2.0); // 2.0g per kg
+
+  document.getElementById('calVal').textContent = `${targetCalories} kcal`;
+  document.getElementById('protVal').textContent = `${protein}g`;
+  document.getElementById('deficitBadge').textContent = `-${deficit} kcal`;
 }
 
 function resetToDefaults() {
@@ -628,7 +639,11 @@ if (isIos && !isStandalone) {
 }
 
 // --- 11. BOOTSTRAP ---
+// Inside Bootstrap / Initialization section
 document.getElementById('userWeight').value = localStorage.getItem('ironforge_weight') || 75;
+document.getElementById('targetWeight').value = localStorage.getItem('ironforge_target_weight') || 70;
+document.getElementById('userDeficit').value = localStorage.getItem('ironforge_deficit') || 450;
+
 renderDayTabs();
 renderRoutine();
 updateProgress();
