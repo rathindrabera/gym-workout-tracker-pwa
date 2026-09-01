@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0b0f17" />
-  <title>IronForge - Double Muscle Tracker</title>
+  <meta name="theme-color" content="#0d1117" />
+  <title>IronForge - Exercise Tracker</title>
   
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/svg+xml" href="icon.svg" />
@@ -14,25 +14,29 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-rounded/css/uicons-solid-rounded.css" />
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-solid-straight/css/uicons-solid-straight.css" />
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/2.6.0/uicons-bold-rounded/css/uicons-bold-rounded.css" />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="min-h-screen pb-28 relative">
 
-  <!-- PWA Install Banner (Android & iOS) -->
   <div id="pwaInstallBanner" class="hidden bg-gradient-to-r from-sky-900/90 to-emerald-900/90 border-b border-sky-500/40 px-4 py-2.5 flex items-center justify-between sticky top-0 z-50 backdrop-blur">
     <div class="flex items-center gap-2">
-      <span class="text-base">📲</span>
+      <i class="fi fi-sr-mobile-notch text-sky-300 text-sm"></i>
       <p class="text-xs text-slate-200 font-medium" id="pwaInstallText">Install App for full offline tracking</p>
     </div>
-    <button id="pwaInstallBtn" class="text-xs bg-sky-400 hover:bg-sky-300 text-slate-950 px-3 py-1.5 rounded-lg font-extrabold shadow transition-all">
-      Install
+    <button id="pwaInstallBtn" class="text-xs bg-sky-400 hover:bg-sky-300 text-slate-950 px-3 py-1.5 rounded-lg font-extrabold shadow transition-all flex items-center gap-1.5">
+      <i class="fi fi-sr-download text-xs"></i>
+      <span>Install</span>
     </button>
   </div>
 
-  <!-- Header -->
   <header class="p-4 bg-slate-900/95 border-b border-slate-800 flex justify-between items-center sticky top-0 z-40 backdrop-blur">
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 to-emerald-400 flex items-center justify-center font-extrabold text-slate-950 text-sm">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 to-emerald-400 flex items-center justify-center font-extrabold text-slate-950 text-sm shadow-md shadow-sky-500/20">
         IF
       </div>
       <div>
@@ -42,30 +46,29 @@
         <p class="text-[11px] text-slate-400" id="currentDateDisplay">Double Muscle Split</p>
       </div>
     </div>
-    <span class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-semibold">
-      🔒 100% Private
+    <span class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5">
+      <i class="fi fi-sr-lock text-[10px]"></i>
+      <span>Private</span>
     </span>
   </header>
 
-  <!-- View Tabs -->
   <nav class="p-4 max-w-xl mx-auto flex space-x-2" id="tour-step-4">
-    <button onclick="switchTab('tracker')" id="nav-tracker" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20">
-      🏋️ Workout Tracker
+    <button onclick="switchTab('tracker')" id="nav-tracker" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2">
+      <i class="fi fi-sr-dumbbell text-sm"></i>
+      <span>Workout Tracker</span>
     </button>
-    <button onclick="switchTab('analytics')" id="nav-analytics" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-400 hover:bg-slate-700">
-      📊 Analytics & Vitals
+    <button onclick="switchTab('analytics')" id="nav-analytics" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-400 hover:bg-slate-700 flex items-center justify-center gap-2">
+      <i class="fi fi-sr-chart-histogram text-sm"></i>
+      <span>Analytics &amp; Vitals</span>
     </button>
   </nav>
 
-  <!-- TAB 1: WORKOUT TRACKER -->
   <main id="trackerTab" class="p-4 max-w-xl mx-auto space-y-4 pt-0">
 
-    <!-- Day Navigation -->
     <div class="overflow-x-auto pb-1 scrollbar-none" id="tour-step-1">
       <div class="flex space-x-2 w-full" id="dayTabs"></div>
     </div>
 
-    <!-- Progress Indicator Card with Quick Share -->
     <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 flex items-center justify-between">
       <div>
         <h3 class="text-xs text-slate-400 font-medium">Session Progress</h3>
@@ -75,76 +78,42 @@
         <div class="w-20 sm:w-28 bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
           <div id="progressBar" class="bg-gradient-to-r from-sky-400 to-emerald-400 h-full w-0 transition-all duration-300"></div>
         </div>
-        <button onclick="shareTodayProgress()" title="Share Workout" class="p-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center gap-1">
-          <span>📤</span>
+        <button onclick="shareTodayProgress()" title="Share Workout" class="p-2.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center">
+          <i class="fi fi-sr-share text-sm"></i>
         </button>
       </div>
     </div>
 
-    <!-- Routine Card -->
     <section id="tour-step-2" class="tour-target-wrapper">
       <div id="routineCard" class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 neon-glow space-y-4">
-        <!-- Injected via JS -->
-      </div>
+        </div>
     </section>
 
-    <!-- Treadmill Target -->
     <section id="tour-step-3" class="tour-target-wrapper">
       <div id="treadmillCard" class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-3">
-        <!-- Injected via JS -->
-      </div>
+        </div>
     </section>
 
   </main>
 
-  <!-- TAB 2: ANALYTICS & VITALS -->
   <main id="analyticsTab" class="hidden p-4 max-w-xl mx-auto space-y-4 pt-0">
-    <!-- Social Media Achievement Share Card -->
-    <section class="bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950/40 rounded-2xl p-5 border border-sky-500/30 space-y-4 neon-glow">
-      <div class="flex justify-between items-center">
-        <div>
-          <h3 class="font-bold text-sky-400 text-sm">🏆 Share Your Flex</h3>
-          <p class="text-[11px] text-slate-400">Post your weekly stats & gains to socials</p>
-        </div>
-        <span class="text-xs bg-sky-500/10 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded-full font-bold">
-          Streak Active
-        </span>
-      </div>
 
-      <!-- Live Preview Badge -->
-      <div id="sharePreviewBadge" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center space-y-2">
-        <div class="flex justify-center items-center gap-1 text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
-          ⚡ IRONFORGE STATUS
-        </div>
-        <p class="text-xs text-slate-300 font-semibold" id="shareBadgeHeadline">Crushing Double-Muscle Split</p>
-        <div class="flex justify-around text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
-          <div><span class="text-emerald-400 font-bold block text-sm" id="badgeExDone">0</span> Lifts Logged</div>
-          <div><span class="text-sky-400 font-bold block text-sm" id="badgeCardioDone">0</span> Cardio Days</div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 pt-1">
-        <button onclick="shareTextStatus()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all">
-          <span>💬</span> Share Text Status
-        </button>
-        <button onclick="generateAndShareBadge()" class="w-full py-2.5 bg-gradient-to-r from-sky-400 to-emerald-400 text-slate-950 rounded-xl text-xs font-extrabold shadow flex items-center justify-center gap-1.5 active:scale-95 transition-all">
-          <span>🖼️</span> Share Story Image
-        </button>
-      </div>
-    </section>
-    
-    <!-- Summary -->
     <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-4">
       <h2 class="text-base font-bold text-sky-400 flex items-center gap-2">
-        <span>📈 Weekly Consistency & Completion</span>
+        <i class="fi fi-sr-stats text-base"></i>
+        <span>Weekly Consistency &amp; Completion</span>
       </h2>
       <div class="grid grid-cols-2 gap-3 text-center">
         <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/50">
-          <span class="text-xs text-slate-400 block">Total Exercises Logged</span>
+          <span class="text-xs text-slate-400 flex items-center justify-center gap-1">
+            <i class="fi fi-sr-gym text-[11px]"></i> Total Lifts Logged
+          </span>
           <span class="text-xl font-extrabold text-emerald-400 mt-1 block" id="statCompletedEx">0</span>
         </div>
         <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/50">
-          <span class="text-xs text-slate-400 block">Cardio Completed</span>
+          <span class="text-xs text-slate-400 flex items-center justify-center gap-1">
+            <i class="fi fi-sr-running text-[11px]"></i> Cardio Completed
+          </span>
           <span class="text-xl font-extrabold text-sky-400 mt-1 block" id="statCompletedCardio">0 Days</span>
         </div>
       </div>
@@ -154,9 +123,62 @@
       </div>
     </section>
 
-    <!-- Target Deficit & Vitals Calculator (Customizable Deficit) -->
+    <section class="bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950/40 rounded-2xl p-5 border border-sky-500/30 space-y-4 neon-glow">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-sky-400 text-sm flex items-center gap-2">
+            <i class="fi fi-sr-trophy text-amber-400 text-base"></i>
+            <span>Share Your Flex</span>
+          </h3>
+          <p class="text-[11px] text-slate-400">Post your weekly stats &amp; gains to socials</p>
+        </div>
+        <span class="text-xs bg-sky-500/10 text-sky-300 border border-sky-500/30 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5">
+          <i class="fi fi-sr-flame text-amber-400 text-xs"></i>
+          <span>Streak Active</span>
+        </span>
+      </div>
+
+      <div id="sharePreviewBadge" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center space-y-2">
+        <div class="flex justify-center items-center gap-1.5 text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
+          <i class="fi fi-sr-bolt text-sky-400 text-sm"></i>
+          <span>IRONFORGE STATUS</span>
+        </div>
+        <p class="text-xs text-slate-300 font-semibold" id="shareBadgeHeadline">Crushing Double-Muscle Split</p>
+        <div class="flex justify-around text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
+          <div class="flex flex-col items-center">
+            <span class="text-emerald-400 font-extrabold text-sm flex items-center gap-1">
+              <i class="fi fi-sr-dumbbell text-xs"></i>
+              <span id="badgeExDone">0</span>
+            </span>
+            <span class="text-[10px] text-slate-400">Lifts Logged</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <span class="text-sky-400 font-extrabold text-sm flex items-center gap-1">
+              <i class="fi fi-sr-running text-xs"></i>
+              <span id="badgeCardioDone">0</span>
+            </span>
+            <span class="text-[10px] text-slate-400">Cardio Days</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button onclick="shareTextStatus()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <i class="fi fi-sr-comment-alt text-sky-400 text-sm"></i>
+          <span>Share Text</span>
+        </button>
+        <button onclick="generateAndShareBadge()" class="w-full py-2.5 bg-gradient-to-r from-sky-400 to-emerald-400 text-slate-950 rounded-xl text-xs font-extrabold shadow flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <i class="fi fi-sr-picture text-slate-950 text-sm"></i>
+          <span>Share Story</span>
+        </button>
+      </div>
+    </section>
+
     <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-4">
-      <h2 class="text-base font-bold text-emerald-400">🥗 Target Deficit & Macro Planner</h2>
+      <h2 class="text-base font-bold text-emerald-400 flex items-center gap-2">
+        <i class="fi fi-sr-salad text-base"></i>
+        <span>Target Deficit &amp; Macro Planner</span>
+      </h2>
       <div class="grid grid-cols-3 gap-2.5">
         <div>
           <label class="text-xs text-slate-400 block mb-1">Current (kg)</label>
@@ -188,11 +210,10 @@
       </div>
     </section>
 
-
-    <!-- Reset & Tour Actions -->
     <section class="p-4 text-center space-y-3">
-      <button onclick="startDemoTour(true)" class="block mx-auto text-xs bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-4 py-2 rounded-xl font-bold">
-        🔄 Replay Interactive App Tour
+      <button onclick="startDemoTour(true)" class="block mx-auto text-xs bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2">
+        <i class="fi fi-sr-refresh text-xs"></i>
+        <span>Replay Interactive App Tour</span>
       </button>
       <button onclick="resetToDefaults()" class="text-xs text-rose-400/80 hover:text-rose-400 underline block mx-auto">
         Reset All Routines to Default Split
@@ -201,11 +222,27 @@
 
   </main>
 
-  <!-- MODAL 1: EXERCISE EDITOR -->
+  <footer class="mt-8 pb-6 text-center text-xs text-slate-500 space-y-2 border-t border-slate-800/80 pt-6">
+    <div class="flex items-center justify-center gap-1.5 font-medium tracking-wide">
+      <span>Built with</span>
+      <i class="fi fi-sr-heart text-rose-500 animate-pulse text-xs"></i>
+      <span>&amp; forged for gains by</span>
+      <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-teal-300 to-emerald-400 hover:opacity-90 transition-opacity">
+        Rathindra Bera
+      </span>
+    </div>
+    <p class="text-[10px] text-slate-600">
+      IronForge PWA &bull; 100% Client-Side &amp; Private
+    </p>
+  </footer>
+
   <div id="editModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-5 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-white text-sm" id="modalTitle">Edit Exercise</h3>
+        <h3 class="font-bold text-white text-sm flex items-center gap-2" id="modalTitle">
+          <i class="fi fi-sr-pencil text-sky-400 text-xs"></i>
+          <span>Edit Exercise</span>
+        </h3>
         <button onclick="closeModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
       </div>
       <div>
@@ -213,21 +250,29 @@
         <input type="text" id="modalExName" class="w-full rounded-lg p-2.5 text-sm" />
       </div>
       <div class="space-y-2" id="modalSetsContainer">
-        <label class="text-xs text-slate-400 block">Sets (Reps & Weight Targets)</label>
+        <label class="text-xs text-slate-400 block">Sets (Reps &amp; Weight Targets)</label>
       </div>
-      <button onclick="addSetField()" class="w-full py-1.5 bg-slate-800 text-sky-400 rounded-lg text-xs font-semibold hover:bg-slate-700">+ Add Set</button>
+      <button onclick="addSetField()" class="w-full py-1.5 bg-slate-800 text-sky-400 rounded-lg text-xs font-semibold hover:bg-slate-700 flex items-center justify-center gap-1.5">
+        <i class="fi fi-sr-plus text-[10px]"></i>
+        <span>Add Set</span>
+      </button>
       <div class="flex space-x-2 pt-2">
-        <button onclick="saveModalChanges()" class="flex-1 py-2.5 bg-sky-500 text-slate-950 rounded-xl font-bold text-xs hover:bg-sky-400">Save Changes</button>
+        <button onclick="saveModalChanges()" class="flex-1 py-2.5 bg-sky-500 text-slate-950 rounded-xl font-bold text-xs hover:bg-sky-400 flex items-center justify-center gap-1.5">
+          <i class="fi fi-sr-check text-xs"></i>
+          <span>Save Changes</span>
+        </button>
         <button onclick="closeModal()" class="px-4 py-2.5 bg-slate-800 text-slate-400 rounded-xl font-semibold text-xs">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 2: DAY CONFIGURATION -->
   <div id="dayConfigModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-white text-sm" id="dayConfigTitle">Customize Workout Day</h3>
+        <h3 class="font-bold text-white text-sm flex items-center gap-2" id="dayConfigTitle">
+          <i class="fi fi-sr-settings text-sky-400 text-xs"></i>
+          <span>Customize Workout Day</span>
+        </h3>
         <button onclick="closeDayConfigModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
       </div>
 
@@ -235,8 +280,14 @@
         <div>
           <label class="text-slate-400 block mb-1">Day Status</label>
           <div class="flex space-x-2">
-            <button type="button" id="btnStatusWorkout" onclick="setModalDayType(false)" class="flex-1 py-2 rounded-lg font-bold border transition-all">🏋️ Active Workout</button>
-            <button type="button" id="btnStatusRest" onclick="setModalDayType(true)" class="flex-1 py-2 rounded-lg font-bold border transition-all">🛋️ Rest Day</button>
+            <button type="button" id="btnStatusWorkout" onclick="setModalDayType(false)" class="flex-1 py-2 rounded-lg font-bold border transition-all flex items-center justify-center gap-1.5">
+              <i class="fi fi-sr-gym text-xs"></i>
+              <span>Active Workout</span>
+            </button>
+            <button type="button" id="btnStatusRest" onclick="setModalDayType(true)" class="flex-1 py-2 rounded-lg font-bold border transition-all flex items-center justify-center gap-1.5">
+              <i class="fi fi-sr-bed text-xs"></i>
+              <span>Rest Day</span>
+            </button>
           </div>
         </div>
 
@@ -251,7 +302,10 @@
         </div>
 
         <div class="border-t border-slate-800 pt-3 space-y-2">
-          <label class="text-sky-400 font-bold block">🏃 Treadmill / Cardio Target</label>
+          <label class="text-sky-400 font-bold block flex items-center gap-1.5">
+            <i class="fi fi-sr-running text-sm"></i>
+            <span>Treadmill / Cardio Target</span>
+          </label>
           <div>
             <label class="text-slate-400 block mb-1">Cardio Title</label>
             <input type="text" id="cfgTmTitle" class="w-full rounded-lg p-2 text-xs" />
@@ -278,13 +332,15 @@
       </div>
 
       <div class="flex space-x-2 pt-2 border-t border-slate-800">
-        <button onclick="saveDayConfigChanges()" class="flex-1 py-2.5 bg-emerald-500 text-slate-950 rounded-xl font-bold text-xs hover:bg-emerald-400">Save Configuration</button>
+        <button onclick="saveDayConfigChanges()" class="flex-1 py-2.5 bg-emerald-500 text-slate-950 rounded-xl font-bold text-xs hover:bg-emerald-400 flex items-center justify-center gap-1.5">
+          <i class="fi fi-sr-disk text-xs"></i>
+          <span>Save Configuration</span>
+        </button>
         <button onclick="closeDayConfigModal()" class="px-4 py-2.5 bg-slate-800 text-slate-400 rounded-xl font-semibold text-xs">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 3: FIX PROPERLY LAYERED TOUR OVERLAY -->
   <div id="tourModal" class="hidden">
     <div id="tourBackdrop" class="tour-backdrop" onclick="endTour()"></div>
     <div id="tourCard" class="tour-card-container">
@@ -301,31 +357,19 @@
       </p>
 
       <div class="flex items-center justify-between pt-2 border-t border-slate-700/60 mt-2">
-        <button onclick="prevTourStep()" id="tourPrevBtn" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold border border-slate-700 hidden">
-          &larr; Back
+        <button onclick="prevTourStep()" id="tourPrevBtn" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold border border-slate-700 hidden flex items-center gap-1">
+          <i class="fi fi-sr-arrow-left text-[10px]"></i>
+          <span>Back</span>
         </button>
         <div class="flex gap-1.5" id="tourDots"></div>
-        <button onclick="nextTourStep()" id="tourNextBtn" class="px-5 py-2 bg-gradient-to-r from-sky-400 to-emerald-400 text-slate-950 rounded-xl text-xs font-extrabold shadow active:scale-95 transition-all">
-          Next &rarr;
+        <button onclick="nextTourStep()" id="tourNextBtn" class="px-5 py-2 bg-gradient-to-r from-sky-400 to-emerald-400 text-slate-950 rounded-xl text-xs font-extrabold shadow active:scale-95 transition-all flex items-center gap-1.5">
+          <span>Next</span>
+          <i class="fi fi-sr-arrow-right text-[10px]"></i>
         </button>
       </div>
     </div>
   </div>
-    <!-- App Footer -->
-  <footer class="mt-8 pb-6 text-center text-xs text-slate-500 space-y-2 border-t border-slate-800/80 pt-6">
-    <div class="flex items-center justify-center gap-1.5 font-medium tracking-wide">
-      <span>Built with</span>
-      <span class="text-rose-500 animate-pulse">❤️</span>
-      <span>&amp; forged for gains by</span>
-      <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-teal-300 to-emerald-400 hover:opacity-90 transition-opacity">
-        Rathindra Bera
-      </span>
-    </div>
-    <p class="text-[10px] text-slate-600">
-      IronForge PWA &bull; 100% Client-Side &amp; Private
-    </p>
-  </footer>
-  
+
   <script src="app.js"></script>
 </body>
 </html>
