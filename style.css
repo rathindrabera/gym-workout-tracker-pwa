@@ -12,7 +12,9 @@ body {
   box-shadow: 0 0 20px rgba(56, 189, 248, 0.12);
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   background: #161f2e;
   border: 1px solid #2d3b55;
   color: #fff;
@@ -22,7 +24,7 @@ input, select, textarea {
   display: none;
 }
 
-/* Tour Overlay Fixed Layers */
+/* Semi-transparent dark overlay */
 .tour-backdrop {
   position: fixed;
   inset: 0;
@@ -30,9 +32,9 @@ input, select, textarea {
   z-index: 80;
 }
 
+/* Dynamic floating card */
 .tour-card-container {
   position: fixed;
-  bottom: 20px;
   left: 16px;
   right: 16px;
   max-width: 480px;
@@ -43,9 +45,20 @@ input, select, textarea {
   padding: 1.25rem;
   z-index: 100;
   box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.9), 0 0 25px rgba(56, 189, 248, 0.25);
+  transition: top 0.3s ease, bottom 0.3s ease;
 }
 
-/* Spotlight that stays BELOW the tour card and does not displace elements */
+.tour-card-bottom {
+  bottom: 24px;
+  top: auto;
+}
+
+.tour-card-top {
+  top: 80px;
+  bottom: auto;
+}
+
+/* Target element spotlight */
 .tour-focus {
   position: relative !important;
   z-index: 85 !important;
