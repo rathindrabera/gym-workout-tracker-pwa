@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>IronForge - Double Muscle Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f17; color: #e2e8f0; }
+    .neon-border { border-color: rgba(56, 189, 248, 0.3); }
+    .neon-glow { box-shadow: 0 0 15px rgba(56, 189, 248, 0.15); }
+    input, select { background: #161f2e; border: 1px solid #2d3b55; color: #fff; }
+  </style>
+</head>
+<body class="min-h-screen pb-24">
+
+  <!-- Header -->
+  <header class="p-4 bg-slate-900/90 backdrop-blur sticky top-0 z-40 border-b border-slate-800 flex justify-between items-center">
+    <div>
+      <h1 class="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400">
+        IRONFORGE
+      </h1>
+      <p class="text-xs text-slate-400">Double Muscle & Vitals Tracker</p>
+    </div>
+    <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-semibold">
+      🔒 100% Private (On-Device)
+    </span>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="p-4 max-w-xl mx-auto space-y-5">
+
+    <!-- Day Navigation -->
+    <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-none" id="dayTabs"></div>
+
+    <!-- Active Routine Details -->
+    <section id="routineCard" class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 neon-glow space-y-4">
+      <!-- Injected via JS -->
+    </section>
+
+    <!-- Treadmill & Cardio Target -->
+    <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-sky-400 flex items-center gap-2">
+          <span>🏃 Treadmill Target</span>
+        </h3>
+        <span id="treadmillSummary" class="text-xs text-slate-300 font-medium bg-slate-800 px-2 py-1 rounded"></span>
+      </div>
+      <p id="treadmillDesc" class="text-sm text-slate-400"></p>
+    </section>
+
+    <!-- Daily Calorie & Vitals Calculator -->
+    <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-4">
+      <h3 class="font-bold text-emerald-400">🥗 Target Deficit & Vitals</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-slate-400">Current Weight (kg)</label>
+          <input type="number" id="userWeight" class="w-full rounded-lg p-2 mt-1 text-sm" placeholder="75" onchange="calcMacros()" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400">Target Weight (kg)</label>
+          <input type="number" id="targetWeight" class="w-full rounded-lg p-2 mt-1 text-sm" placeholder="70" onchange="calcMacros()" />
+        </div>
+      </div>
+      <div id="macroResults" class="grid grid-cols-3 gap-2 text-center pt-2 border-t border-slate-800 text-xs">
+        <div class="bg-slate-800/60 p-2 rounded-lg">
+          <span class="text-slate-400 block">Calories</span>
+          <span id="calVal" class="text-emerald-400 font-bold text-sm">--</span>
+        </div>
+        <div class="bg-slate-800/60 p-2 rounded-lg">
+          <span class="text-slate-400 block">Protein</span>
+          <span id="protVal" class="text-sky-400 font-bold text-sm">--</span>
+        </div>
+        <div class="bg-slate-800/60 p-2 rounded-lg">
+          <span class="text-slate-400 block">Deficit</span>
+          <span class="text-amber-400 font-bold text-sm">-450 kcal</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Initial Default Data (Editable and stored locally per individual user)
+    const DEFAULT_ROUTINES = [
+      {
+        id: "mon",
+        day: "Monday",
+        title: "Upper Body A + Core",
+        treadmill: { title: "20 min Incline Fat-Burn", speed: "5.0 km/h", incline: "9%", desc: "Post-lift steady state zone 2 walk. Burn fat without depleting glycogen." },
+        exercises: [
+          { name: "Incline DB Press", sets: [{ r: 12, w: "20kg" }, { r: 10, w: "22.5kg" }, { r: 8, w: "25kg" }, { r: 6, w: "27.5kg" }] },
+          { name: "Barbell Bent Rows", sets: [{ r: 10, w: "40kg" }, { r: 8, w: "45kg" }, { r: 8, w: "50kg" }, { r: 6, w: "55kg" }] },
+          { name: "Seated DB Shoulder Press", sets: [{ r: 12, w: "14kg" }, { r: 10, w: "16kg" }, { r: 8, w: "18kg" }] },
+          { name: "EZ-Bar Curls (Biceps)", sets: [{ r: 12, w: "20kg" }, { r: 10, w: "25kg" }, { r: 8, w: "27.5kg" }] },
+          { name: "Triceps Pushdown", sets: [{ r: 15, w: "20kg" }, { r: 12, w: "25kg" }, { r: 10, w: "30kg" }] },
+          { name: "Hanging Leg Raises (Core)", sets: [{ r: 15, w: "Body" }, { r: 15, w: "Body" }, { r: 12, w: "Body" }] }
+        ]
+      },
+      {
+        id: "tue",
+        day: "Tuesday",
+        title: "Lower Body A (Quads/Hams)",
+        treadmill: { title: "15 min HIIT Sprints", speed: "11 km/h", incline: "0%", desc: "30s sprint / 30s walk intervals × 10 rounds." },
+        exercises: [
+          { name: "Barbell Squats", sets: [{ r: 10, w: "60kg" }, { r: 8, w: "70kg" }, { r: 6, w: "80kg" }, { r: 6, w: "85kg" }] },
+          { name: "Romanian Deadlifts (RDL)", sets: [{ r: 10, w: "50kg" }, { r: 8, w: "60kg" }, { r: 8, w: "70kg" }] },
+          { name: "Bulgarian Split Squats", sets: [{ r: 10, w: "12kg" }, { r: 10, w: "14kg" }, { r: 10, w: "16kg" }] },
+          { name: "Calf Raises", sets: [{ r: 15, w: "40kg" }, { r: 15, w: "50kg" }, { r: 15, w: "60kg" }] }
+        ]
+      },
+      {
+        id: "wed",
+        day: "Wednesday",
+        title: "Active Rest Day",
+        treadmill: { title: "Rest or Light Mobility", speed: "-", incline: "-", desc: "Full central nervous system recovery. Hydrate and hit protein goals." },
+        exercises: []
+      },
+      {
+        id: "thu",
+        day: "Thursday",
+        title: "Upper Body B + Core",
+        treadmill: { title: "20 min Incline Fat-Burn", speed: "5.2 km/h", incline: "10%", desc: "Steady incline walk to accelerate fat oxidation." },
+        exercises: [
+          { name: "Flat Barbell Bench Press", sets: [{ r: 10, w: "50kg" }, { r: 8, w: "55kg" }, { r: 6, w: "60kg" }, { r: 6, w: "65kg" }] },
+          { name: "Seated Cable Rows", sets: [{ r: 12, w: "40kg" }, { r: 10, w: "45kg" }, { r: 8, w: "50kg" }] },
+          { name: "DB Lateral Raises", sets: [{ r: 15, w: "7.5kg" }, { r: 12, w: "10kg" }, { r: 10, w: "10kg" }] },
+          { name: "Incline Hammer Curls", sets: [{ r: 12, w: "12kg" }, { r: 10, w: "14kg" }, { r: 8, w: "16kg" }] },
+          { name: "Overhead Tricep Extension", sets: [{ r: 12, w: "18kg" }, { r: 10, w: "22kg" }, { r: 8, w: "24kg" }] },
+          { name: "Ab Wheel Rollouts", sets: [{ r: 12, w: "Body" }, { r: 10, w: "Body" }, { r: 10, w: "Body" }] }
+        ]
+      },
+      {
+        id: "fri",
+        day: "Friday",
+        title: "Lower Body B (Posterior Focus)",
+        treadmill: { title: "15 min Incline Sprints", speed: "8.5 km/h", incline: "6%", desc: "30s run at 6% incline / 45s rest walk × 8 rounds." },
+        exercises: [
+          { name: "Deadlifts (Conventional / Trap)", sets: [{ r: 8, w: "70kg" }, { r: 6, w: "85kg" }, { r: 5, w: "100kg" }] },
+          { name: "Hack Squats / Front Squats", sets: [{ r: 10, w: "40kg" }, { r: 8, w: "50kg" }, { r: 8, w: "60kg" }] },
+          { name: "Hamstring Curls", sets: [{ r: 12, w: "30kg" }, { r: 10, w: "35kg" }, { r: 10, w: "40kg" }] },
+          { name: "Leg Extensions", sets: [{ r: 15, w: "35kg" }, { r: 12, w: "45kg" }, { r: 10, w: "50kg" }] }
+        ]
+      },
+      {
+        id: "sat",
+        day: "Saturday",
+        title: "Full Body Hypertrophy + Core",
+        treadmill: { title: "25 min Extended Incline", speed: "5.0 km/h", incline: "11%", desc: "Continuous fat-loss steady state." },
+        exercises: [
+          { name: "DB Flat Press", sets: [{ r: 10, w: "22kg" }, { r: 8, w: "24kg" }, { r: 8, w: "26kg" }] },
+          { name: "Chest-Supported DB Rows", sets: [{ r: 10, w: "20kg" }, { r: 10, w: "22kg" }, { r: 8, w: "24kg" }] },
+          { name: "Leg Press", sets: [{ r: 12, w: "100kg" }, { r: 10, w: "120kg" }, { r: 8, w: "140kg" }] },
+          { name: "Cable Lateral Raises", sets: [{ r: 15, w: "5kg" }, { r: 12, w: "7.5kg" }, { r: 10, w: "7.5kg" }] },
+          { name: "Dragon Flags / Plank Dips", sets: [{ r: 12, w: "Body" }, { r: 12, w: "Body" }, { r: 10, w: "Body" }] }
+        ]
+      },
+      {
+        id: "sun",
+        day: "Sunday",
+        title: "Full Rest Day",
+        treadmill: { title: "Rest Day", speed: "-", incline: "-", desc: "Full physical recovery." },
+        exercises: []
+      }
+    ];
+
+    // Load from user's isolated local storage
+    let routines = JSON.parse(localStorage.getItem('ironforge_routines')) || DEFAULT_ROUTINES;
+    let selectedDay = 'mon';
+
+    function saveRoutines() {
+      localStorage.setItem('ironforge_routines', JSON.stringify(routines));
+    }
+
+    function renderTabs() {
+      const tabs = document.getElementById('dayTabs');
+      tabs.innerHTML = routines.map(r => `
+        <button onclick="setDay('${r.id}')" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedDay === r.id ? 'bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}">
+          ${r.day.slice(0, 3)}
+        </button>
+      `).join('');
+    }
+
+    function setDay(id) {
+      selectedDay = id;
+      renderTabs();
+      renderRoutine();
+    }
+
+    function renderRoutine() {
+      const r = routines.find(x => x.id === selectedDay);
+      const container = document.getElementById('routineCard');
+      
+      document.getElementById('treadmillSummary').textContent = `${r.treadmill.incline} • ${r.treadmill.speed}`;
+      document.getElementById('treadmillDesc').textContent = `${r.treadmill.title} — ${r.treadmill.desc}`;
+
+      if (r.exercises.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-slate-400">
+            <p class="text-lg font-bold text-slate-200">${r.title}</p>
+            <p class="text-sm mt-1">No lifting scheduled. Relax and recover!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-lg font-bold text-white">${r.title}</h2>
+            <p class="text-xs text-slate-400">${r.day} • Ascending Pyramids</p>
+          </div>
+          <button onclick="addExercisePrompt()" class="text-xs bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-3 py-1.5 rounded-lg font-semibold">+ Add Exercise</button>
+        </div>
+        <div class="space-y-4 pt-2">
+          ${r.exercises.map((ex, exIdx) => `
+            <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-bold text-sm text-slate-200">${ex.name}</span>
+                <button onclick="deleteExercise(${exIdx})" class="text-xs text-rose-400 hover:underline">Delete</button>
+              </div>
+              <div class="grid grid-cols-4 gap-2 text-center text-xs text-slate-400 font-medium">
+                ${ex.sets.map((s, sIdx) => `
+                  <div class="bg-slate-900/80 p-2 rounded border border-slate-800">
+                    <span class="text-[10px] text-slate-500 block">Set ${sIdx + 1}</span>
+                    <span class="text-sky-400 font-bold">${s.w}</span>
+                    <span class="block text-[11px]">${s.r} reps</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function addExercisePrompt() {
+      const name = prompt("Enter Exercise Name:");
+      if (!name) return;
+      const r = routines.find(x => x.id === selectedDay);
+      r.exercises.push({
+        name,
+        sets: [{ r: 12, w: "20kg" }, { r: 10, w: "22.5kg" }, { r: 8, w: "25kg" }]
+      });
+      saveRoutines();
+      renderRoutine();
+    }
+
+    function deleteExercise(idx) {
+      const r = routines.find(x => x.id === selectedDay);
+      r.exercises.splice(idx, 1);
+      saveRoutines();
+      renderRoutine();
+    }
+
+    function calcMacros() {
+      const w = parseFloat(document.getElementById('userWeight').value) || 75;
+      localStorage.setItem('ironforge_weight', w);
+      const cals = Math.round((w * 30) - 450);
+      const prot = Math.round(w * 2.0);
+      document.getElementById('calVal').textContent = `${cals} kcal`;
+      document.getElementById('protVal').textContent = `${prot}g`;
+    }
+
+    // Init
+    document.getElementById('userWeight').value = localStorage.getItem('ironforge_weight') || 75;
+    renderTabs();
+    renderRoutine();
+    calcMacros();
+  </script>
+</body>
+</html>
