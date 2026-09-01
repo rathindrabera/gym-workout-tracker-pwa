@@ -116,17 +116,21 @@
       </div>
     </section>
 
-    <!-- Target Deficit & Vitals -->
+    <!-- Target Deficit & Vitals Calculator (Customizable Deficit) -->
     <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-4">
       <h2 class="text-base font-bold text-emerald-400">🥗 Target Deficit & Macro Planner</h2>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-3 gap-2.5">
         <div>
-          <label class="text-xs text-slate-400 block mb-1">Current Weight (kg)</label>
-          <input type="number" id="userWeight" class="w-full rounded-lg p-2 text-sm font-semibold" placeholder="75" onchange="calcMacros()" />
+          <label class="text-xs text-slate-400 block mb-1">Current (kg)</label>
+          <input type="number" id="userWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center" placeholder="75" onchange="calcMacros()" />
         </div>
         <div>
-          <label class="text-xs text-slate-400 block mb-1">Target Weight (kg)</label>
-          <input type="number" id="targetWeight" class="w-full rounded-lg p-2 text-sm font-semibold" placeholder="70" onchange="calcMacros()" />
+          <label class="text-xs text-slate-400 block mb-1">Target (kg)</label>
+          <input type="number" id="targetWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center" placeholder="70" onchange="calcMacros()" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">Deficit (kcal)</label>
+          <input type="number" id="userDeficit" class="w-full rounded-lg p-2 text-sm font-semibold text-center border-amber-500/50" placeholder="450" step="50" onchange="calcMacros()" />
         </div>
       </div>
 
@@ -140,11 +144,12 @@
           <span id="protVal" class="text-sky-400 font-bold text-sm">--</span>
         </div>
         <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/40">
-          <span class="text-slate-400 block text-[10px]">Daily Deficit</span>
-          <span class="text-amber-400 font-bold text-sm">-450 kcal</span>
+          <span class="text-slate-400 block text-[10px]">Active Deficit</span>
+          <span id="deficitBadge" class="text-amber-400 font-bold text-sm">-450 kcal</span>
         </div>
       </div>
     </section>
+
 
     <!-- Reset & Tour Actions -->
     <section class="p-4 text-center space-y-3">
