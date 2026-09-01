@@ -658,3 +658,176 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(console.error);
   });
 }
+
+// --- 12. SOCIAL MEDIA SHARING & ACHIEVEMENTS ---
+
+// 1. Share Today's Immediate Workout Progress
+async function shareTodayProgress() {
+  const r = routines.find(x => x.id === selectedDay);
+  const total = r.exercises.length;
+  let done = 0;
+  r.exercises.forEach((_, idx) => {
+    if (completedLog[`${r.id}_ex_${idx}`]) done++;
+  });
+
+  const shareData = {
+    title: 'IronForge Workout Progress',
+    text: `⚡ Crushed today's ${r.title} session on IronForge! Completed ${done}/${total} lifts with ascending pyramids. #IronForge #GymGains #DoubleMuscleSplit`,
+    url: window.location.href
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+    } catch (err) {
+      console.log('Share dismissed');
+    }
+  } else {
+    // Fallback: Copy to clipboard
+    navigator.clipboard.writeText(`${shareData.text} \n${shareData.url}`);
+    alert('📋 Workout summary copied to clipboard! Paste it to your social media or chat.');
+  }
+}
+
+// 2. Share Weekly Achievement as Text Status
+async function shareTextStatus() {
+  let totalEx = 0;
+  let totalCardio = 0;
+  routines.forEach(r => {
+    r.exercises.forEach((_, idx) => {
+      if (completedLog[`${r.id}_ex_${idx}`]) totalEx++;
+    });
+    if (completedLog[`${r.id}_treadmill`]) totalCardio++;
+  });
+
+  const text = `🔥 Weekly Fitness Report on IronForge:\n💪 ${totalEx} Exercises Logged\n🏃 ${totalCardio} Cardio/Treadmill Sessions Finished\nConsistency is key! 🚀 #IronForge #FitnessGoals #WorkoutTracker`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'My Weekly IronForge Gains',
+        text: text,
+        url: window.location.href
+      });
+    } catch (err) {
+      console.log('Share dismissed');
+    }
+  } else {
+    navigator.clipboard.writeText(text);
+    alert('📋 Achievement text copied to clipboard!');
+  }
+}
+
+// 3. Generate a Visual Story/Post Card using Canvas & Share Image
+async function generateAndShareBadge() {
+  let totalEx = 0;
+  let totalCardio = 0;
+  routines.forEach(r => {
+    r.exercises.forEach((_, idx) => {
+      if (completedLog[`${r.id}_ex_${idx}`]) totalEx++;
+    });
+    if (completedLog[`${r.id}_treadmill`]) totalCardio++;
+  });
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920; // 9:16 Story aspect ratio
+  const ctx = canvas.getContext('2d');
+
+  // Background Gradient
+  const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
+  grad.addColorStop(0, '#070b12');
+  grad.addColorStop(0.5, '#0d1527');
+  grad.addColorStop(1, '#051b1a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1080, 1920);
+
+  // Decorative Border & Glow
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 12;
+  ctx.strokeRect(60, 60, 960, 1800);
+
+  // App Title
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 64px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('IRONFORGE', 540, 300);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '36px sans-serif';
+  ctx.fillText('WORKOUT & VITALS TRACKER', 540, 370);
+
+  // Main Achievement Banner
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 76px sans-serif';
+  ctx.fillText('WEEKLY GAINS UNLOCKED', 540, 650);
+
+  // Stat Boxes
+  ctx.fillStyle = '#161f2e';
+  ctx.roundRect(140, 800, 800, 240, 30);
+  ctx.fill();
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 90px sans-serif';
+  ctx.fillText(`${totalEx}`, 540, 920);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '36px sans-serif';
+  ctx.fillText('Exercises Completed', 540, 990);
+
+  ctx.fillStyle = '#161f2e';
+  ctx.roundRect(140, 1100, 800, 240, 30);
+  ctx.fill();
+  ctx.fillStyle = '#10b981';
+  ctx.font = 'bold 90px sans-serif';
+  ctx.fillText(`${totalCardio} Days`, 540, 1220);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '36px sans-serif';
+  ctx.fillText('Cardio & Treadmill Sessions', 540, 1290);
+
+  // Footer Branding
+  ctx.fillStyle = '#64748b';
+  ctx.font = '34px sans-serif';
+  ctx.fillText('Forged for gains by Rathindra Bera', 540, 1650);
+
+  // Convert to Blob and trigger Native Share
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'ironforge-achievement.png', { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'My IronForge Achievement',
+          text: 'Crushing goals with IronForge! 💪'
+        });
+      } catch (err) {
+        console.log('Image share cancelled');
+      }
+    } else {
+      // Direct download fallback
+      const link = document.createElement('a');
+      link.download = 'ironforge-achievement.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      alert('🖼️ Achievement image downloaded! You can now post it to your Instagram / WhatsApp Story.');
+    }
+  }, 'image/png');
+}
+
+// Update the live badges whenever analytics render
+const originalRenderAnalytics = renderAnalytics;
+renderAnalytics = function() {
+  originalRenderAnalytics();
+  let totalEx = 0;
+  let totalCardio = 0;
+  routines.forEach(r => {
+    r.exercises.forEach((_, idx) => {
+      if (completedLog[`${r.id}_ex_${idx}`]) totalEx++;
+    });
+    if (completedLog[`${r.id}_treadmill`]) totalCardio++;
+  });
+  if (document.getElementById('badgeExDone')) {
+    document.getElementById('badgeExDone').textContent = totalEx;
+    document.getElementById('badgeCardioDone').textContent = totalCardio;
+  }
+};
+  
