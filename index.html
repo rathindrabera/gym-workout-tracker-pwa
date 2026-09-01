@@ -18,9 +18,10 @@
     .neon-glow { box-shadow: 0 0 20px rgba(56, 189, 248, 0.12); }
     input, select, textarea { background: #161f2e; border: 1px solid #2d3b55; color: #fff; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
+    .tour-focus { position: relative; z-index: 60 !important; box-shadow: 0 0 0 9999px rgba(3, 7, 18, 0.88), 0 0 25px rgba(56, 189, 248, 0.6) !important; border-radius: 1rem; }
   </style>
 </head>
-<body class="min-h-screen pb-24">
+<body class="min-h-screen pb-24 relative">
 
   <!-- Top Header -->
   <header class="p-4 bg-slate-900/90 backdrop-blur sticky top-0 z-40 border-b border-slate-800 flex justify-between items-center">
@@ -43,7 +44,7 @@
   </header>
 
   <!-- Navigation View Tabs -->
-  <nav class="p-4 max-w-xl mx-auto flex space-x-2">
+  <nav class="p-4 max-w-xl mx-auto flex space-x-2" id="tour-step-4">
     <button onclick="switchTab('tracker')" id="nav-tracker" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20">
       🏋️ Workout Tracker
     </button>
@@ -55,8 +56,10 @@
   <!-- MAIN VIEW: TRACKER -->
   <main id="trackerTab" class="p-4 max-w-xl mx-auto space-y-5 pt-0">
 
-    <!-- Day Switcher Bar (Current day active by default) -->
-    <div class="flex space-x-2 overflow-x-auto pb-1 scrollbar-none" id="dayTabs"></div>
+    <!-- Day Switcher Bar -->
+    <div class="flex space-x-2 overflow-x-auto pb-1 scrollbar-none" id="tour-step-1">
+      <div class="flex space-x-2 overflow-x-auto pb-1 scrollbar-none w-full" id="dayTabs"></div>
+    </div>
 
     <!-- Progress Indicator Card -->
     <div class="bg-slate-900/90 rounded-2xl p-4 border border-slate-800 flex items-center justify-between">
@@ -70,13 +73,17 @@
     </div>
 
     <!-- Routine Card -->
-    <section id="routineCard" class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 neon-glow space-y-4">
-      <!-- Injected Dynamically -->
+    <section id="tour-step-2" class="rounded-2xl transition-all">
+      <div id="routineCard" class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 neon-glow space-y-4">
+        <!-- Injected Dynamically -->
+      </div>
     </section>
 
     <!-- Treadmill Target & Check-off -->
-    <section id="treadmillCard" class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-3">
-      <!-- Injected Dynamically -->
+    <section id="tour-step-3" class="rounded-2xl transition-all">
+      <div id="treadmillCard" class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-3">
+        <!-- Injected Dynamically -->
+      </div>
     </section>
 
   </main>
@@ -135,28 +142,19 @@
       </div>
     </section>
 
-    <!-- Muscle Group Balance Breakdown -->
-    <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-3">
-      <h3 class="text-sm font-bold text-slate-200">Weekly Target Volume Distribution</h3>
-      <div class="space-y-2 text-xs">
-        <div>
-          <div class="flex justify-between text-slate-400 mb-1"><span>Upper Body (Chest, Back, Arms, Delts)</span><span class="text-sky-400 font-bold">2× Frequency</span></div>
-          <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-sky-400 h-full w-[100%]"></div></div>
-        </div>
-        <div>
-          <div class="flex justify-between text-slate-400 mb-1"><span>Lower Body (Quads, Posterior Chain, Calves)</span><span class="text-emerald-400 font-bold">2× Frequency</span></div>
-          <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-emerald-400 h-full w-[100%]"></div></div>
-        </div>
-        <div>
-          <div class="flex justify-between text-slate-400 mb-1"><span>Direct Core & Anti-Rotation</span><span class="text-amber-400 font-bold">3× Frequency (Alternate)</span></div>
-          <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-amber-400 h-full w-[100%]"></div></div>
-        </div>
-      </div>
+    <!-- Interactive Onboarding Replay & Reset -->
+    <section class="p-4 text-center space-y-3">
+      <button onclick="startDemoTour(true)" class="block mx-auto text-xs bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-4 py-2 rounded-xl font-bold">
+        🔄 Replay Interactive App Tour
+      </button>
+      <button onclick="resetToDefaults()" class="text-xs text-rose-400/80 hover:text-rose-400 underline block mx-auto">
+        Reset All Routines to Default Split
+      </button>
     </section>
 
   </main>
 
-  <!-- Edit Exercise Modal -->
+  <!-- 1. EDIT EXERCISE MODAL -->
   <div id="editModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-5 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -169,7 +167,6 @@
       </div>
       <div class="space-y-2" id="modalSetsContainer">
         <label class="text-xs text-slate-400 block">Sets (Reps & Weight Targets)</label>
-        <!-- Injected Sets -->
       </div>
       <button onclick="addSetField()" class="w-full py-1.5 bg-slate-800 text-sky-400 rounded-lg text-xs font-semibold hover:bg-slate-700">+ Add Set</button>
       <div class="flex space-x-2 pt-2">
@@ -179,14 +176,107 @@
     </div>
   </div>
 
+  <!-- 2. EDIT WORKOUT GROUP & DAY CONFIG MODAL -->
+  <div id="dayConfigModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-white text-sm" id="dayConfigTitle">Customize Workout Day</h3>
+        <button onclick="closeDayConfigModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="text-slate-400 block mb-1">Day Status</label>
+          <div class="flex space-x-2">
+            <button type="button" id="btnStatusWorkout" onclick="setModalDayType(false)" class="flex-1 py-2 rounded-lg font-bold border transition-all">🏋️ Active Workout</button>
+            <button type="button" id="btnStatusRest" onclick="setModalDayType(true)" class="flex-1 py-2 rounded-lg font-bold border transition-all">🛋️ Rest Day</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Group / Routine Title</label>
+          <input type="text" id="cfgTitle" class="w-full rounded-lg p-2.5 text-sm" placeholder="e.g., Upper Body A + Core" />
+        </div>
+
+        <div>
+          <label class="text-slate-400 block mb-1">Workout Description / Focus</label>
+          <textarea id="cfgDesc" rows="2" class="w-full rounded-lg p-2.5 text-sm" placeholder="e.g., Heavy pushing, lateral delts, and core rotation."></textarea>
+        </div>
+
+        <div class="border-t border-slate-800 pt-3 space-y-2">
+          <label class="text-sky-400 font-bold block">🏃 Treadmill / Cardio Target</label>
+          <div>
+            <label class="text-slate-400 block mb-1">Cardio Title</label>
+            <input type="text" id="cfgTmTitle" class="w-full rounded-lg p-2 text-xs" />
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="text-slate-400 block mb-1">Speed</label>
+              <input type="text" id="cfgTmSpeed" class="w-full rounded-lg p-2 text-xs text-center" />
+            </div>
+            <div>
+              <label class="text-slate-400 block mb-1">Incline</label>
+              <input type="text" id="cfgTmIncline" class="w-full rounded-lg p-2 text-xs text-center" />
+            </div>
+            <div>
+              <label class="text-slate-400 block mb-1">Duration</label>
+              <input type="text" id="cfgTmDuration" class="w-full rounded-lg p-2 text-xs text-center" />
+            </div>
+          </div>
+          <div>
+            <label class="text-slate-400 block mb-1">Cardio Instructions</label>
+            <input type="text" id="cfgTmDesc" class="w-full rounded-lg p-2 text-xs" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex space-x-2 pt-2 border-t border-slate-800">
+        <button onclick="saveDayConfigChanges()" class="flex-1 py-2.5 bg-emerald-500 text-slate-950 rounded-xl font-bold text-xs hover:bg-emerald-400">Save Configuration</button>
+        <button onclick="closeDayConfigModal()" class="px-4 py-2.5 bg-slate-800 text-slate-400 rounded-xl font-semibold text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. INTERACTIVE FIRST-TIME DEMO TOUR OVERLAY -->
+  <div id="tourModal" class="fixed inset-0 z-50 hidden flex flex-col justify-end p-4 pb-8 pointer-events-none">
+    <div class="bg-slate-900/95 backdrop-blur border border-sky-500/50 w-full max-w-md mx-auto rounded-2xl p-5 shadow-2xl pointer-events-auto space-y-4 neon-glow">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-xs bg-sky-500/20 text-sky-400 font-bold px-2 py-0.5 rounded-full" id="tourStepBadge">Step 1 of 4</span>
+          <span class="text-xs text-slate-400 font-semibold" id="tourHeading">Interactive Guide</span>
+        </div>
+        <button onclick="endTour()" class="text-xs text-slate-400 hover:text-white">&times; Skip</button>
+      </div>
+
+      <p class="text-sm text-slate-200" id="tourText">
+        Welcome to IronForge! Let's take a quick 30-second walkthrough to set up your workouts and vitals.
+      </p>
+
+      <div class="flex items-center justify-between pt-1">
+        <button onclick="prevTourStep()" id="tourPrevBtn" class="px-3 py-1.5 bg-slate-800 text-slate-400 rounded-lg text-xs font-semibold hidden">Back</button>
+        <div class="flex gap-1" id="tourDots">
+          <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+          <span class="w-2 h-2 rounded-full bg-slate-700"></span>
+          <span class="w-2 h-2 rounded-full bg-slate-700"></span>
+          <span class="w-2 h-2 rounded-full bg-slate-700"></span>
+        </div>
+        <button onclick="nextTourStep()" id="tourNextBtn" class="px-4 py-2 bg-gradient-to-r from-sky-400 to-emerald-400 text-slate-950 rounded-xl text-xs font-bold shadow">
+          Next &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // --- 1. DEFAULT DATASET WITH DOUBLE MUSCLE + CORE + TREADMILL ---
+    // --- 1. DEFAULT DATASET ---
     const DEFAULT_ROUTINES = [
       {
         id: "sun",
         day: "Sunday",
         dayIndex: 0,
+        isRest: true,
         title: "Full Rest Day",
+        description: "Complete physical and central nervous system recovery.",
         treadmill: { title: "Complete Physical Rest", speed: "-", incline: "-", duration: "0 min", desc: "Hydration and recovery." },
         exercises: []
       },
@@ -194,7 +284,9 @@
         id: "mon",
         day: "Monday",
         dayIndex: 1,
+        isRest: false,
         title: "Upper Body A + Core",
+        description: "Chest, Back, Shoulders, Arms, and Direct Core flexions.",
         treadmill: { title: "Incline Fat-Burn (LISS)", speed: "5.0 km/h", incline: "9%", duration: "20 min", desc: "Post-lift steady state zone-2 fat oxidation." },
         exercises: [
           { name: "Incline DB Press", sets: [{ r: 12, w: "20kg" }, { r: 10, w: "22.5kg" }, { r: 8, w: "25kg" }, { r: 6, w: "27.5kg" }] },
@@ -209,7 +301,9 @@
         id: "tue",
         day: "Tuesday",
         dayIndex: 2,
+        isRest: false,
         title: "Lower Body A (Quads/Hams)",
+        description: "Squat mechanics, posterior chain hinges, and calves.",
         treadmill: { title: "HIIT Sprints", speed: "11.0 km/h", incline: "0%", duration: "15 min", desc: "30s sprint / 30s walk intervals × 10 rounds." },
         exercises: [
           { name: "Barbell Back Squats", sets: [{ r: 10, w: "60kg" }, { r: 8, w: "70kg" }, { r: 6, w: "80kg" }, { r: 6, w: "90kg" }] },
@@ -222,7 +316,9 @@
         id: "wed",
         day: "Wednesday",
         dayIndex: 3,
+        isRest: true,
         title: "Active Rest Day",
+        description: "Active recovery, gentle mobility, and protein synthesis.",
         treadmill: { title: "Mobility & Stretching", speed: "-", incline: "-", duration: "0 min", desc: "Active recovery and flexibility work." },
         exercises: []
       },
@@ -230,7 +326,9 @@
         id: "thu",
         day: "Thursday",
         dayIndex: 4,
+        isRest: false,
         title: "Upper Body B + Core",
+        description: "Horizontal pressing, cable rows, lateral delts, and ab wheel rollouts.",
         treadmill: { title: "Incline Fat-Burn (LISS)", speed: "5.2 km/h", incline: "10%", duration: "20 min", desc: "Continuous incline fat-burning walk." },
         exercises: [
           { name: "Flat Barbell Bench Press", sets: [{ r: 10, w: "50kg" }, { r: 8, w: "55kg" }, { r: 6, w: "60kg" }, { r: 6, w: "65kg" }] },
@@ -245,7 +343,9 @@
         id: "fri",
         day: "Friday",
         dayIndex: 5,
+        isRest: false,
         title: "Lower Body B (Posterior Focus)",
+        description: "Heavy deadlifts, front squats, hamstrings, and isolated quads.",
         treadmill: { title: "Incline Sprints HIIT", speed: "8.5 km/h", incline: "6%", duration: "15 min", desc: "30s run at 6% incline / 45s recovery walk × 8 rounds." },
         exercises: [
           { name: "Deadlifts (Conventional)", sets: [{ r: 8, w: "70kg" }, { r: 6, w: "85kg" }, { r: 5, w: "100kg" }] },
@@ -258,7 +358,9 @@
         id: "sat",
         day: "Saturday",
         dayIndex: 6,
+        isRest: false,
         title: "Full Body Hypertrophy + Core",
+        description: "Upper/lower high-density hypertrophy + dragon flags.",
         treadmill: { title: "Extended Incline Walk", speed: "5.0 km/h", incline: "11%", duration: "25 min", desc: "Long duration metabolic conditioning." },
         exercises: [
           { name: "DB Flat Press", sets: [{ r: 10, w: "22kg" }, { r: 8, w: "24kg" }, { r: 8, w: "26kg" }] },
@@ -270,22 +372,20 @@
       }
     ];
 
-    // --- 2. STATE INITIALIZATION ---
+    // --- 2. STATE & PERSISTENCE ---
     let routines = JSON.parse(localStorage.getItem('ironforge_routines')) || DEFAULT_ROUTINES;
-    let completedLog = JSON.parse(localStorage.getItem('ironforge_completed')) || {}; // e.g. { "mon_ex_0": true, "mon_treadmill": true }
+    let completedLog = JSON.parse(localStorage.getItem('ironforge_completed')) || {};
     
-    // Auto-detect current weekday on launch
-    const todayIndex = new Date().getDay(); // 0 (Sun) - 6 (Sat)
+    const todayIndex = new Date().getDay();
     const todayRoutine = routines.find(r => r.dayIndex === todayIndex) || routines[1];
     let selectedDay = todayRoutine.id;
 
     let editingExerciseIndex = null;
+    let modalIsRest = false;
 
-    // Date formatting
     const dateOptions = { weekday: 'long', month: 'short', day: 'numeric' };
     document.getElementById('currentDateDisplay').textContent = new Date().toLocaleDateString(undefined, dateOptions);
 
-    // --- 3. STORAGE HELPERS ---
     function saveRoutines() {
       localStorage.setItem('ironforge_routines', JSON.stringify(routines));
     }
@@ -295,7 +395,7 @@
       renderAnalytics();
     }
 
-    // --- 4. NAVIGATION & TABS ---
+    // --- 3. NAVIGATION & TABS ---
     function switchTab(tab) {
       if (tab === 'tracker') {
         document.getElementById('trackerTab').classList.remove('hidden');
@@ -313,18 +413,19 @@
 
     function renderDayTabs() {
       const container = document.getElementById('dayTabs');
-      // Sort in Mon -> Sun order
       const ordered = [...routines.slice(1), routines[0]];
       container.innerHTML = ordered.map(r => {
         const isToday = r.dayIndex === todayIndex;
         const isSelected = selectedDay === r.id;
+        const isRest = r.isRest;
         return `
-          <button onclick="setDay('${r.id}')" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+          <button onclick="setDay('${r.id}')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
             isSelected 
               ? 'bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20' 
               : 'bg-slate-800/90 text-slate-400 hover:bg-slate-700'
           }">
             <span>${r.day.slice(0, 3)}</span>
+            ${isRest ? '<span class="text-[9px] opacity-70">🛋️</span>' : ''}
             ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>' : ''}
           </button>
         `;
@@ -338,32 +439,43 @@
       updateProgress();
     }
 
-    // --- 5. RENDER ROUTINE & TREADMILL ---
+    // --- 4. RENDER ROUTINE & TREADMILL ---
     function renderRoutine() {
       const r = routines.find(x => x.id === selectedDay);
       const container = document.getElementById('routineCard');
       const tmContainer = document.getElementById('treadmillCard');
 
-      if (r.exercises.length === 0) {
+      if (r.isRest) {
         container.innerHTML = `
-          <div class="text-center py-6 text-slate-400 space-y-1">
-            <p class="text-lg font-bold text-slate-200">${r.title}</p>
-            <p class="text-xs">No heavy resistance lifts scheduled for today. Rest & recover.</p>
-            <button onclick="openModalForNew()" class="mt-3 text-xs bg-sky-500/10 text-sky-400 border border-sky-500/30 px-3 py-1.5 rounded-lg font-semibold hover:bg-sky-500/20">+ Add Workout</button>
+          <div class="text-center py-6 text-slate-400 space-y-2">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+              <span class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full font-bold">Rest Day</span>
+              <button onclick="openDayConfigModal()" class="text-xs bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 font-semibold">⚙️ Customize Day</button>
+            </div>
+            <p class="text-base font-bold text-slate-200 mt-2">${r.title}</p>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto">${r.description || 'No resistance workouts scheduled.'}</p>
+            <div class="pt-3">
+              <button onclick="openModalForNew()" class="text-xs bg-sky-500/10 text-sky-400 border border-sky-500/30 px-3 py-1.5 rounded-lg font-semibold hover:bg-sky-500/20">+ Add Workout To This Day</button>
+            </div>
           </div>
         `;
       } else {
         container.innerHTML = `
-          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <div class="flex justify-between items-start border-b border-slate-800 pb-3">
             <div>
               <h2 class="text-base font-bold text-white">${r.title}</h2>
-              <p class="text-[11px] text-slate-400">${r.day} • Ascending Weight Targets</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">${r.description || `${r.day} • Ascending Weight Targets`}</p>
             </div>
-            <button onclick="openModalForNew()" class="text-xs bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-1 rounded-lg font-semibold">+ Add Lift</button>
+            <div class="flex items-center gap-1.5">
+              <button onclick="openDayConfigModal()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1.5 rounded-lg font-semibold">⚙️ Config</button>
+              <button onclick="openModalForNew()" class="text-[11px] bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-1.5 rounded-lg font-semibold">+ Add Lift</button>
+            </div>
           </div>
 
           <div class="space-y-3 pt-1">
-            ${r.exercises.map((ex, exIdx) => {
+            ${r.exercises.length === 0 ? `
+              <p class="text-xs text-slate-500 text-center py-4">No exercises added yet. Tap "+ Add Lift" above.</p>
+            ` : r.exercises.map((ex, exIdx) => {
               const key = `${r.id}_ex_${exIdx}`;
               const isDone = !!completedLog[key];
               return `
@@ -384,7 +496,6 @@
                     </div>
                   </div>
 
-                  <!-- Sets Grid -->
                   <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
                     ${ex.sets.map((s, sIdx) => `
                       <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
@@ -401,52 +512,83 @@
         `;
       }
 
-      // Treadmill block
       const tmKey = `${r.id}_treadmill`;
       const isTmDone = !!completedLog[tmKey];
+      const hasCardio = r.treadmill.duration && r.treadmill.duration !== "0 min" && r.treadmill.duration !== "0";
+
       tmContainer.innerHTML = `
         <div class="flex justify-between items-center">
           <div class="flex items-center gap-2.5">
-            <input type="checkbox" ${isTmDone ? 'checked' : ''} onchange="toggleDone('${tmKey}')" 
-                   class="w-5 h-5 rounded border-slate-600 text-emerald-500 focus:ring-0 cursor-pointer" />
-            <h3 class="font-bold text-sky-400 text-sm">🏃 Treadmill Target</h3>
+            ${hasCardio ? `
+              <input type="checkbox" ${isTmDone ? 'checked' : ''} onchange="toggleDone('${tmKey}')" 
+                     class="w-5 h-5 rounded border-slate-600 text-emerald-500 focus:ring-0 cursor-pointer" />
+            ` : ''}
+            <h3 class="font-bold text-sky-400 text-sm">🏃 Treadmill / Cardio Target</h3>
           </div>
           <span class="text-[11px] text-slate-300 font-medium bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
-            ${r.treadmill.incline} Incline • ${r.treadmill.speed} • ${r.treadmill.duration}
+            ${hasCardio ? `${r.treadmill.incline} Incline • ${r.treadmill.speed} • ${r.treadmill.duration}` : 'Rest'}
           </span>
         </div>
-        <p class="text-xs text-slate-400">${r.treadmill.title} — ${r.treadmill.desc}</p>
+        <p class="text-xs text-slate-400">${r.treadmill.title || 'Cardio'} — ${r.treadmill.desc || 'None scheduled'}</p>
       `;
     }
 
-    // --- 6. COMPLETION TRACKING & PROGRESS ---
-    function toggleDone(key) {
-      completedLog[key] = !completedLog[key];
-      saveCompleted();
-      renderRoutine();
-    }
-
-    function updateProgress() {
+    // --- 5. DAY CONFIGURATION MODAL ---
+    function openDayConfigModal() {
       const r = routines.find(x => x.id === selectedDay);
-      let total = r.exercises.length + (r.treadmill.duration !== "0 min" ? 1 : 0);
-      if (total === 0) {
-        document.getElementById('progressBar').style.width = '100%';
-        document.getElementById('progressText').textContent = 'Rest Day Complete';
-        return;
-      }
+      document.getElementById('dayConfigTitle').textContent = `Customize ${r.day}`;
+      document.getElementById('cfgTitle').value = r.title;
+      document.getElementById('cfgDesc').value = r.description || "";
+      document.getElementById('cfgTmTitle').value = r.treadmill.title || "";
+      document.getElementById('cfgTmSpeed').value = r.treadmill.speed || "";
+      document.getElementById('cfgTmIncline').value = r.treadmill.incline || "";
+      document.getElementById('cfgTmDuration').value = r.treadmill.duration || "";
+      document.getElementById('cfgTmDesc').value = r.treadmill.desc || "";
 
-      let done = 0;
-      r.exercises.forEach((_, idx) => {
-        if (completedLog[`${r.id}_ex_${idx}`]) done++;
-      });
-      if (r.treadmill.duration !== "0 min" && completedLog[`${r.id}_treadmill`]) done++;
-
-      const pct = Math.round((done / total) * 100);
-      document.getElementById('progressBar').style.width = `${pct}%`;
-      document.getElementById('progressText').textContent = `${pct}% Complete (${done}/${total})`;
+      setModalDayType(r.isRest);
+      document.getElementById('dayConfigModal').classList.remove('hidden');
     }
 
-    // --- 7. EXERCISE MODAL (EDIT & ADD) ---
+    function closeDayConfigModal() {
+      document.getElementById('dayConfigModal').classList.add('hidden');
+    }
+
+    function setModalDayType(isRest) {
+      modalIsRest = isRest;
+      const btnWorkout = document.getElementById('btnStatusWorkout');
+      const btnRest = document.getElementById('btnStatusRest');
+
+      if (isRest) {
+        btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-amber-500/50 bg-amber-500/20 text-amber-300";
+        btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500";
+      } else {
+        btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-emerald-500/50 bg-emerald-500/20 text-emerald-300";
+        btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500";
+      }
+    }
+
+    function saveDayConfigChanges() {
+      const r = routines.find(x => x.id === selectedDay);
+      r.isRest = modalIsRest;
+      r.title = document.getElementById('cfgTitle').value.trim() || (r.isRest ? "Rest Day" : "Custom Workout");
+      r.description = document.getElementById('cfgDesc').value.trim();
+
+      r.treadmill = {
+        title: document.getElementById('cfgTmTitle').value.trim() || "Cardio Session",
+        speed: document.getElementById('cfgTmSpeed').value.trim() || "-",
+        incline: document.getElementById('cfgTmIncline').value.trim() || "-",
+        duration: document.getElementById('cfgTmDuration').value.trim() || (r.isRest ? "0 min" : "20 min"),
+        desc: document.getElementById('cfgTmDesc').value.trim() || "Custom cardio routine"
+      };
+
+      saveRoutines();
+      closeDayConfigModal();
+      renderDayTabs();
+      renderRoutine();
+      updateProgress();
+    }
+
+    // --- 6. EXERCISE MODAL ---
     function openModalForNew() {
       editingExerciseIndex = null;
       document.getElementById('modalTitle').textContent = "Add New Exercise";
@@ -506,6 +648,8 @@
       }));
 
       const r = routines.find(x => x.id === selectedDay);
+      if (r.isRest) r.isRest = false;
+
       if (editingExerciseIndex !== null) {
         r.exercises[editingExerciseIndex] = { name, sets };
       } else {
@@ -514,12 +658,13 @@
 
       saveRoutines();
       closeModal();
+      renderDayTabs();
       renderRoutine();
       updateProgress();
     }
 
     function deleteExercise(idx) {
-      if (!confirm("Are you sure you want to delete this exercise?")) return;
+      if (!confirm("Delete this exercise?")) return;
       const r = routines.find(x => x.id === selectedDay);
       r.exercises.splice(idx, 1);
       saveRoutines();
@@ -527,7 +672,42 @@
       updateProgress();
     }
 
-    // --- 8. ANALYTICS & VITALS TAB ---
+    // --- 7. CHECK-OFFS & PROGRESS ---
+    function toggleDone(key) {
+      completedLog[key] = !completedLog[key];
+      saveCompleted();
+      renderRoutine();
+    }
+
+    function updateProgress() {
+      const r = routines.find(x => x.id === selectedDay);
+      if (r.isRest) {
+        document.getElementById('progressBar').style.width = '100%';
+        document.getElementById('progressText').textContent = 'Rest Day Active';
+        return;
+      }
+
+      const hasCardio = r.treadmill.duration && r.treadmill.duration !== "0 min" && r.treadmill.duration !== "0";
+      let total = r.exercises.length + (hasCardio ? 1 : 0);
+      
+      if (total === 0) {
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('progressText').textContent = '0% (No Lifts)';
+        return;
+      }
+
+      let done = 0;
+      r.exercises.forEach((_, idx) => {
+        if (completedLog[`${r.id}_ex_${idx}`]) done++;
+      });
+      if (hasCardio && completedLog[`${r.id}_treadmill`]) done++;
+
+      const pct = Math.round((done / total) * 100);
+      document.getElementById('progressBar').style.width = `${pct}%`;
+      document.getElementById('progressText').textContent = `${pct}% Complete (${done}/${total})`;
+    }
+
+    // --- 8. ANALYTICS ---
     function renderAnalytics() {
       let totalExCompleted = 0;
       let totalCardioCompleted = 0;
@@ -542,12 +722,11 @@
       document.getElementById('statCompletedEx').textContent = totalExCompleted;
       document.getElementById('statCompletedCardio').textContent = `${totalCardioCompleted} Days`;
 
-      // Render 7-day checkboxes
       const weekContainer = document.getElementById('weekCheckmarks');
       const ordered = [...routines.slice(1), routines[0]];
       weekContainer.innerHTML = ordered.map(r => {
         let isDone = false;
-        if (r.exercises.length === 0) {
+        if (r.isRest || r.exercises.length === 0) {
           isDone = true;
         } else {
           isDone = r.exercises.every((_, idx) => completedLog[`${r.id}_ex_${idx}`]);
@@ -555,7 +734,7 @@
         return `
           <div class="p-2 rounded-lg border ${isDone ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-500'}">
             <span class="block font-bold">${r.day.slice(0, 1)}</span>
-            <span>${isDone ? '✓' : '•'}</span>
+            <span>${r.isRest ? '🛋️' : (isDone ? '✓' : '•')}</span>
           </div>
         `;
       }).join('');
@@ -570,14 +749,110 @@
       document.getElementById('protVal').textContent = `${prot}g`;
     }
 
-    // --- 9. INITIAL BOOTSTRAP ---
+    function resetToDefaults() {
+      if (!confirm("Reset all routines, custom groups, and treadmill targets to default split?")) return;
+      routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
+      completedLog = {};
+      saveRoutines();
+      saveCompleted();
+      renderDayTabs();
+      renderRoutine();
+      updateProgress();
+      renderAnalytics();
+    }
+
+    // --- 9. INTERACTIVE DEMO WALKTHROUGH LOGIC ---
+    let currentTourStep = 0;
+    const tourSteps = [
+      {
+        targetId: 'tour-step-1',
+        title: '🗓️ Auto-Detected Today Split',
+        text: 'The app automatically selects today\'s training routine. You can tap any day to preview workouts or configure custom rest days.'
+      },
+      {
+        targetId: 'tour-step-2',
+        title: '🏋️ Double-Muscle Pyramids',
+        text: 'Each exercise lists ascending weight targets. Tap the checkbox to check off completed sets with live progress ring updates, or edit sets on the fly.'
+      },
+      {
+        targetId: 'tour-step-3',
+        title: '🏃 Treadmill & Fat Loss Targets',
+        text: 'Specific incline and HIIT treadmill protocols are scheduled after lifts to maximize caloric burn while preserving lean muscle mass.'
+      },
+      {
+        targetId: 'tour-step-4',
+        title: '📊 Analytics & Macro Planner',
+        text: 'Switch tabs anytime to calculate your target deficit calories, protein intake, and view your weekly 7-day consistency chart!'
+      }
+    ];
+
+    function startDemoTour(force = false) {
+      if (!force && localStorage.getItem('ironforge_tour_completed')) return;
+      currentTourStep = 0;
+      switchTab('tracker');
+      document.getElementById('tourModal').classList.remove('hidden');
+      renderTourStep();
+    }
+
+    function renderTourStep() {
+      // Clear previous spotlights
+      document.querySelectorAll('.tour-focus').forEach(el => el.classList.remove('tour-focus'));
+
+      const step = tourSteps[currentTourStep];
+      const target = document.getElementById(step.targetId);
+      if (target) {
+        target.classList.add('tour-focus');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      document.getElementById('tourStepBadge').textContent = `Step ${currentTourStep + 1} of ${tourSteps.length}`;
+      document.getElementById('tourHeading').textContent = step.title;
+      document.getElementById('tourText').textContent = step.text;
+
+      // Update Dots
+      const dotsContainer = document.getElementById('tourDots');
+      dotsContainer.innerHTML = tourSteps.map((_, i) => `
+        <span class="w-2 h-2 rounded-full ${i === currentTourStep ? 'bg-sky-400' : 'bg-slate-700'}"></span>
+      `).join('');
+
+      document.getElementById('tourPrevBtn').classList.toggle('hidden', currentTourStep === 0);
+      document.getElementById('tourNextBtn').textContent = currentTourStep === tourSteps.length - 1 ? "Let's Lift! 🚀" : "Next →";
+    }
+
+    function nextTourStep() {
+      if (currentTourStep < tourSteps.length - 1) {
+        currentTourStep++;
+        renderTourStep();
+      } else {
+        endTour();
+      }
+    }
+
+    function prevTourStep() {
+      if (currentTourStep > 0) {
+        currentTourStep--;
+        renderTourStep();
+      }
+    }
+
+    function endTour() {
+      document.querySelectorAll('.tour-focus').forEach(el => el.classList.remove('tour-focus'));
+      document.getElementById('tourModal').classList.add('hidden');
+      localStorage.setItem('ironforge_tour_completed', 'true');
+    }
+
+    // --- 10. BOOTSTRAP ---
     document.getElementById('userWeight').value = localStorage.getItem('ironforge_weight') || 75;
     renderDayTabs();
     renderRoutine();
     updateProgress();
     calcMacros();
 
-    // Register Service Worker
+    // Check first-time walkthrough
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => startDemoTour(false), 500);
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(console.error);
