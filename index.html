@@ -163,6 +163,82 @@
       </div>
 
       <div class="grid grid-cols-2 gap-2 pt-1">
+  <!-- TAB 2: ANALYTICS & VITALS -->
+  <main id="analyticsTab" class="hidden p-4 max-w-xl mx-auto space-y-4 pt-0">
+
+    <!-- Date Range Filter Tabs -->
+    <div class="bg-slate-900/80 p-1 rounded-xl border border-slate-800 flex gap-1">
+      <button onclick="setAnalyticsTimeframe(7)" id="btn-timeframe-7" class="timeframe-btn flex-1 py-1.5 rounded-lg text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow">
+        7 Days
+      </button>
+      <button onclick="setAnalyticsTimeframe(30)" id="btn-timeframe-30" class="timeframe-btn flex-1 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800 text-slate-400">
+        30 Days
+      </button>
+      <button onclick="setAnalyticsTimeframe(365)" id="btn-timeframe-365" class="timeframe-btn flex-1 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800 text-slate-400">
+        1 Year
+      </button>
+    </div>
+
+    <!-- Multi-Metric Historical Cards -->
+    <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-4">
+      <h2 class="text-base font-bold text-sky-400 flex items-center justify-between">
+        <span class="flex items-center gap-2">
+          <i class="fi fi-sr-chart-line-up text-base"></i>
+          <span>Historical Output &amp; Volume</span>
+        </span>
+        <span id="statActiveDays" class="text-xs bg-slate-800 text-sky-300 px-2.5 py-1 rounded-full font-bold">0 Days Active</span>
+      </h2>
+
+      <div class="grid grid-cols-3 gap-2.5 text-center">
+        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/40">
+          <span class="text-[10px] text-slate-400 block font-semibold">Total Lifts</span>
+          <span class="text-lg font-extrabold text-emerald-400 mt-0.5 block" id="statCompletedEx">0</span>
+        </div>
+        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/40">
+          <span class="text-[10px] text-slate-400 block font-semibold">Cardio Done</span>
+          <span class="text-lg font-extrabold text-sky-400 mt-0.5 block" id="statCompletedCardio">0</span>
+        </div>
+        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/40">
+          <span class="text-[10px] text-slate-400 block font-semibold">Calorie Burn</span>
+          <span class="text-lg font-extrabold text-amber-400 mt-0.5 block" id="statCalorieBurn">0 kcal</span>
+        </div>
+      </div>
+
+      <!-- Trend Canvas Graph -->
+      <div class="space-y-2 pt-2 border-t border-slate-800/80">
+        <div class="flex justify-between items-center text-xs text-slate-400">
+          <span>Daily Training Frequency Graph</span>
+          <span class="text-[10px] text-emerald-400 font-bold">● Active Workout</span>
+        </div>
+        <div class="w-full h-36 bg-slate-950/80 rounded-xl border border-slate-800/80 p-2 relative overflow-hidden">
+          <canvas id="analyticsChart" class="w-full h-full"></canvas>
+        </div>
+      </div>
+
+      <!-- 7-Day Streak Markers -->
+      <div class="space-y-1.5 pt-2 border-t border-slate-800">
+        <span class="text-[11px] text-slate-400 font-semibold block">Last 7 Days Consistency</span>
+        <div class="grid grid-cols-7 gap-1.5 text-center" id="weekCheckmarks"></div>
+      </div>
+    </section>
+
+    <!-- Social Media Achievement Share Card -->
+    <section class="bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950/40 rounded-2xl p-5 border border-sky-500/30 space-y-4 neon-glow">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-sky-400 text-sm flex items-center gap-2">
+            <i class="fi fi-sr-trophy text-amber-400 text-base"></i>
+            <span>Share Your Flex</span>
+          </h3>
+          <p class="text-[11px] text-slate-400">Post your verified workout logs to socials</p>
+        </div>
+        <span class="text-xs bg-sky-500/10 text-sky-300 border border-sky-500/30 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5">
+          <i class="fi fi-sr-flame text-amber-400 text-xs"></i>
+          <span>Live Streak</span>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-1">
         <button onclick="shareTextStatus()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all">
           <i class="fi fi-sr-comment-alt text-sky-400 text-sm"></i>
           <span>Share Text</span>
@@ -174,6 +250,7 @@
       </div>
     </section>
 
+    <!-- Target Deficit & Vitals Calculator -->
     <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-4">
       <h2 class="text-base font-bold text-emerald-400 flex items-center gap-2">
         <i class="fi fi-sr-salad text-base"></i>
@@ -210,17 +287,8 @@
       </div>
     </section>
 
-    <section class="p-4 text-center space-y-3">
-      <button onclick="startDemoTour(true)" class="block mx-auto text-xs bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2">
-        <i class="fi fi-sr-refresh text-xs"></i>
-        <span>Replay Interactive App Tour</span>
-      </button>
-      <button onclick="resetToDefaults()" class="text-xs text-rose-400/80 hover:text-rose-400 underline block mx-auto">
-        Reset All Routines to Default Split
-      </button>
-    </section>
-
   </main>
+        
 
   <footer class="mt-8 pb-6 text-center text-xs text-slate-500 space-y-2 border-t border-slate-800/80 pt-6">
     <div class="flex items-center justify-center gap-1.5 font-medium tracking-wide">
