@@ -88,7 +88,7 @@ const DEFAULT_ROUTINES = [
   }
 ];
 
-// --- 2. GLOBAL STATE & INITIALIZATION ---
+// --- 2. GLOBAL STATE & DATE HELPERS ---
 let routines = JSON.parse(localStorage.getItem('ironforge_routines')) || DEFAULT_ROUTINES;
 let completedLog = JSON.parse(localStorage.getItem('ironforge_completed')) || {};
 let userProfile = JSON.parse(localStorage.getItem('ironforge_user_profile')) || null;
@@ -124,8 +124,10 @@ function saveRoutines() {
   if (activeRoutineSource === 'mine') {
     localStorage.setItem('ironforge_routines', JSON.stringify(routines));
   } else {
-    importedRoutinesStore[activeRoutineSource].routines = routines;
-    localStorage.setItem('ironforge_imported_stores', JSON.stringify(importedRoutinesStore));
+    if (importedRoutinesStore[activeRoutineSource]) {
+      importedRoutinesStore[activeRoutineSource].routines = routines;
+      localStorage.setItem('ironforge_imported_stores', JSON.stringify(importedRoutinesStore));
+    }
   }
 }
 
@@ -224,7 +226,6 @@ function syncProfileUI() {
 
   const nameDisplay = document.getElementById('headerUserName');
   if (nameDisplay) {
-    // Clean display without raw disconnected floating characters
     nameDisplay.textContent = userProfile.name ? `(${userProfile.name})` : '';
   }
 }
@@ -234,7 +235,7 @@ function calculatePreciseBMR(weightKg, heightCm, ageYears, gender) {
   return Math.round((10 * weightKg) + (6.25 * heightCm) - (5 * ageYears) + s);
 }
 
-// --- 4. MULTI-ROUTINE PROFILE SWITCHER ---
+// --- 4. MULTI-ROUTINE PROFILE SWITCHER & DELETION ---
 function updateRoutineSourceDropdown() {
   const select = document.getElementById('routineSourceSelect');
   if (!select) return;
@@ -246,33 +247,45 @@ function updateRoutineSourceDropdown() {
   }).join('');
 
   select.innerHTML = defaultOption + importedOptions;
+
+  if (activeRoutineSource !== 'mine' && !importedRoutinesStore[activeRoutineSource]) {
+    activeRoutineSource = 'mine';
+    localStorage.setItem('ironforge_active_source', 'mine');
+  }
+
   select.value = activeRoutineSource;
+  syncActiveSourceUI(activeRoutineSource);
 }
 
-// 1. Routine Profile Switcher (Mine vs Imported) with Delete Trigger
-function switchRoutineSource(sourceKey) {
-  activeRoutineSource = sourceKey;
-  localStorage.setItem('ironforge_active_source', sourceKey);
-
+function syncActiveSourceUI(sourceKey) {
   const badge = document.getElementById('activePlanOwnerBadge');
   const deleteBtn = document.getElementById('deleteImportedBtn');
 
   if (sourceKey === 'mine') {
+    if (badge) badge.textContent = 'Primary';
+    if (deleteBtn) deleteBtn.classList.add('hidden');
+  } else if (importedRoutinesStore[sourceKey]) {
+    if (badge) badge.textContent = `Shared by ${importedRoutinesStore[sourceKey].name}`;
+    if (deleteBtn) deleteBtn.classList.remove('hidden');
+  }
+}
+
+function switchRoutineSource(sourceKey) {
+  activeRoutineSource = sourceKey;
+  localStorage.setItem('ironforge_active_source', sourceKey);
+
+  if (sourceKey === 'mine') {
     routines = JSON.parse(localStorage.getItem('ironforge_routines')) || DEFAULT_ROUTINES;
-    if (badge) badge.textContent = 'Primary Plan';
-    if (deleteBtn) deleteBtn.classList.add('hidden'); // Never allow deleting the primary routine
   } else if (importedRoutinesStore[sourceKey]) {
     routines = importedRoutinesStore[sourceKey].routines;
-    if (badge) badge.textContent = `Shared by ${importedRoutinesStore[sourceKey].name}`;
-    if (deleteBtn) deleteBtn.classList.remove('hidden'); // Reveal delete button for imported plans
   }
 
+  syncActiveSourceUI(sourceKey);
   renderDayTabs();
   renderRoutine();
   updateProgress();
 }
 
-// 2. Delete Imported Routine Function
 function deleteActiveImportedRoutine() {
   if (activeRoutineSource === 'mine') return;
 
@@ -282,17 +295,17 @@ function deleteActiveImportedRoutine() {
   const confirmed = confirm(`Are you sure you want to remove ${planName}'s routine from your library?`);
   if (!confirmed) return;
 
-  // Remove from memory and storage
   delete importedRoutinesStore[activeRoutineSource];
   localStorage.setItem('ironforge_imported_stores', JSON.stringify(importedRoutinesStore));
 
-  // Switch back to athlete's primary default routine
+  activeRoutineSource = 'mine';
+  localStorage.setItem('ironforge_active_source', 'mine');
+
   updateRoutineSourceDropdown();
   switchRoutineSource('mine');
 
   alert(`🗑️ Removed ${planName}'s routine.`);
 }
-
 
 // --- 5. NAVIGATION & TABS ---
 function switchTab(tab) {
@@ -347,7 +360,7 @@ function renderRoutine() {
   const r = routines.find(x => x.id === selectedDay);
   const container = document.getElementById('routineCard');
   const tmContainer = document.getElementById('treadmillCard');
-  if (!container || !tmContainer) return;
+  if (!container || !tmContainer || !r) return;
 
   if (r.isRest) {
     container.innerHTML = `
@@ -452,6 +465,7 @@ function renderRoutine() {
 // --- 7. DAY CONFIGURATION MODAL ---
 function openDayConfigModal() {
   const r = routines.find(x => x.id === selectedDay);
+  if (!r) return;
   document.getElementById('dayConfigTitle').innerHTML = `<i class="fi fi-sr-settings text-sky-400 text-xs"></i> <span>Customize ${r.day}</span>`;
   document.getElementById('cfgTitle').value = r.title;
   document.getElementById('cfgDesc').value = r.description || "";
@@ -485,6 +499,7 @@ function setModalDayType(isRest) {
 
 function saveDayConfigChanges() {
   const r = routines.find(x => x.id === selectedDay);
+  if (!r) return;
   r.isRest = modalIsRest;
   r.title = document.getElementById('cfgTitle').value.trim() || (r.isRest ? "Rest Day" : "Custom Workout");
   r.description = document.getElementById('cfgDesc').value.trim();
@@ -516,6 +531,7 @@ function openModalForNew() {
 function openModalForEdit(idx) {
   editingExerciseIndex = idx;
   const r = routines.find(x => x.id === selectedDay);
+  if (!r) return;
   const ex = r.exercises[idx];
   document.getElementById('modalTitle').innerHTML = `<i class="fi fi-sr-pencil text-sky-400 text-xs"></i> <span>Edit Exercise</span>`;
   document.getElementById('modalExName').value = ex.name;
@@ -564,6 +580,7 @@ function saveModalChanges() {
   }));
 
   const r = routines.find(x => x.id === selectedDay);
+  if (!r) return;
   if (r.isRest) r.isRest = false;
 
   if (editingExerciseIndex !== null) {
@@ -582,6 +599,7 @@ function saveModalChanges() {
 function deleteExercise(idx) {
   if (!confirm("Delete this exercise?")) return;
   const r = routines.find(x => x.id === selectedDay);
+  if (!r) return;
   r.exercises.splice(idx, 1);
   saveRoutines();
   renderRoutine();
@@ -598,9 +616,13 @@ function toggleDone(rawKey) {
 
 function updateProgress() {
   const r = routines.find(x => x.id === selectedDay);
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  if (!progressBar || !progressText || !r) return;
+
   if (r.isRest) {
-    document.getElementById('progressBar').style.width = '100%';
-    document.getElementById('progressText').textContent = 'Rest Day Active';
+    progressBar.style.width = '100%';
+    progressText.textContent = 'Rest Day Active';
     return;
   }
 
@@ -608,8 +630,8 @@ function updateProgress() {
   let total = r.exercises.length + (hasCardio ? 1 : 0);
   
   if (total === 0) {
-    document.getElementById('progressBar').style.width = '0%';
-    document.getElementById('progressText').textContent = '0% (No Lifts)';
+    progressBar.style.width = '0%';
+    progressText.textContent = '0% (No Lifts)';
     return;
   }
 
@@ -620,8 +642,8 @@ function updateProgress() {
   if (hasCardio && completedLog[getDateKey(`${r.id}_treadmill`)]) done++;
 
   const pct = Math.round((done / total) * 100);
-  document.getElementById('progressBar').style.width = `${pct}%`;
-  document.getElementById('progressText').textContent = `${pct}% Complete (${done}/${total})`;
+  progressBar.style.width = `${pct}%`;
+  progressText.textContent = `${pct}% Complete (${done}/${total})`;
 }
 
 // --- 10. TIME-SERIES ANALYTICS ENGINE & GRAPH ---
@@ -1014,6 +1036,7 @@ function endTour() {
 // --- 14. SOCIAL MEDIA SHARING & STORY GENERATOR ---
 async function shareTodayProgress() {
   const r = routines.find(x => x.id === selectedDay);
+  if (!r) return;
   const total = r.exercises.length;
   let done = 0;
   r.exercises.forEach((_, idx) => {
@@ -1306,11 +1329,12 @@ function importWorkoutPlan(event) {
       };
       localStorage.setItem('ironforge_imported_stores', JSON.stringify(importedRoutinesStore));
 
-      updateRoutineSourceDropdown();
+      activeRoutineSource = profileKey;
+      localStorage.setItem('ironforge_active_source', profileKey);
 
-      if (confirm(`Imported split from "${authorName}"! Do you want to switch to this routine now?`)) {
-        switchRoutineSource(profileKey);
-      }
+      updateRoutineSourceDropdown();
+      switchRoutineSource(profileKey);
+
       alert(`✅ Routine from ${authorName} successfully imported to your routine library!`);
     } catch (err) {
       alert("❌ Import failed: " + err.message);
@@ -1371,6 +1395,7 @@ renderRoutine();
 updateProgress();
 checkInitialProfile();
 updateRoutineSourceDropdown();
+switchRoutineSource(activeRoutineSource);
 calcMacros();
 
 window.addEventListener('DOMContentLoaded', () => {
