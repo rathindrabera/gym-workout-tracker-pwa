@@ -309,17 +309,6 @@
         Enter your start, current, and target weights to project your timeline and progress.
       </div>
     </section>
-
-    <!-- Reset & Tour Actions -->
-    <section class="p-4 text-center space-y-3">
-      <button onclick="startDemoTour(true)" class="block mx-auto text-xs bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2">
-        <i class="fi fi-sr-refresh text-xs"></i>
-        <span>Replay Interactive App Tour</span>
-      </button>
-      <button onclick="resetToDefaults()" class="text-xs text-rose-400/80 hover:text-rose-400 underline block mx-auto">
-        Reset All Routines to Default Split
-      </button>
-    </section>
     
     <!-- Backup, Sync & Share Plan -->
     <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-3">
@@ -350,6 +339,21 @@
         </button>
       </div>
     </section>
+
+    <!-- Reset & Tour Actions -->
+    <section class="p-4 text-center space-y-3">
+      <button onclick="startDemoTour(true)" class="block mx-auto text-xs bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-4 py-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all">
+        <i class="fi fi-sr-refresh text-xs"></i>
+        <span>Replay Interactive App Tour</span>
+      </button>
+      
+      <!-- Clear All Workouts & History Trigger -->
+      <button onclick="clearAllWorkoutsAndData()" class="text-xs text-rose-400/90 hover:text-rose-300 font-semibold flex items-center justify-center gap-1.5 mx-auto transition-colors pt-2">
+        <i class="fi fi-sr-trash text-xs"></i>
+        <span>Clear All Workouts &amp; History</span>
+      </button>
+    </section>
+    
   </main>
 
   <!-- Global Footer -->
