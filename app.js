@@ -198,18 +198,26 @@ function saveUserProfile() {
 
   localStorage.setItem('ironforge_user_profile', JSON.stringify(userProfile));
 
-  if (!localStorage.getItem('ironforge_start_weight')) localStorage.setItem('ironforge_start_weight', startWeight);
-  if (!localStorage.getItem('ironforge_weight')) localStorage.setItem('ironforge_weight', startWeight);
-  if (!localStorage.getItem('ironforge_target_weight')) localStorage.setItem('ironforge_target_weight', targetWeight);
+  // FORCE SYNC: Profile goals overwrite the Planner's baseline and target
+  localStorage.setItem('ironforge_start_weight', startWeight);
+  localStorage.setItem('ironforge_target_weight', targetWeight);
+  
+  // Only overwrite Current Weight if it's the user's very first time, 
+  // so we don't accidentally erase their weekly progress check-ins.
+  if (!localStorage.getItem('ironforge_weight')) {
+    localStorage.setItem('ironforge_weight', startWeight);
+  }
 
+  // Instantly update the HTML input boxes on the Planner Card
   const startInput = document.getElementById('startWeight');
-  const currInput = document.getElementById('currentWeight');
   const targetInput = document.getElementById('targetWeight');
+  const currInput = document.getElementById('currentWeight');
 
-  if (startInput) startInput.value = localStorage.getItem('ironforge_start_weight');
-  if (currInput) currInput.value = localStorage.getItem('ironforge_weight');
-  if (targetInput) targetInput.value = localStorage.getItem('ironforge_target_weight');
+  if (startInput) startInput.value = startWeight;
+  if (targetInput) targetInput.value = targetWeight;
+  if (currInput && !currInput.value) currInput.value = startWeight;
 
+  // Refresh UI and recalculate the BMR logic
   syncProfileUI();
   updateRoutineSourceDropdown();
   calcMacros();
@@ -218,17 +226,6 @@ function saveUserProfile() {
   if (modal) modal.classList.add('hidden');
 }
 
-function syncProfileUI() {
-  if (!userProfile) return;
-  const initials = userProfile.name.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'IF';
-  const avatar = document.getElementById('userAvatarBadge');
-  if (avatar) avatar.textContent = initials;
-
-  const nameDisplay = document.getElementById('headerUserName');
-  if (nameDisplay) {
-    nameDisplay.textContent = userProfile.name ? `(${userProfile.name})` : '';
-  }
-}
 
 function calculatePreciseBMR(weightKg, heightCm, ageYears, gender) {
   const s = gender === 'female' ? -161 : 5;
