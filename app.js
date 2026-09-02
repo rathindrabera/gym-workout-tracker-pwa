@@ -1,4 +1,8 @@
-// --- 1. DEFAULT DATASET ---
+// ==========================================
+// IRONFORGE - DOUBLE MUSCLE WORKOUT TRACKER
+// ==========================================
+
+// --- 1. DEFAULT ROUTINE CONFIGURATION ---
 const DEFAULT_ROUTINES = [
   {
     id: "sun",
@@ -102,9 +106,22 @@ const DEFAULT_ROUTINES = [
   }
 ];
 
-// --- 2. APP STATE ---
+// --- 2. STATE & DATE HELPERS ---
 let routines = JSON.parse(localStorage.getItem('ironforge_routines')) || DEFAULT_ROUTINES;
 let completedLog = JSON.parse(localStorage.getItem('ironforge_completed')) || {};
+
+function getTodayDateString(offsetDays = 0) {
+  const d = new Date();
+  if (offsetDays !== 0) d.setDate(d.getDate() + offsetDays);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getDateKey(key, dateStr = getTodayDateString()) {
+  return `${dateStr}:${key}`;
+}
 
 const todayIndex = new Date().getDay();
 const todayRoutine = routines.find(r => r.dayIndex === todayIndex) || routines[1];
@@ -112,14 +129,15 @@ let selectedDay = todayRoutine.id;
 
 let editingExerciseIndex = null;
 let modalIsRest = false;
+let activeAnalyticsFilter = 7;
 
-// Date Header
 const dateOptions = { weekday: 'long', month: 'short', day: 'numeric' };
 document.getElementById('currentDateDisplay').textContent = new Date().toLocaleDateString(undefined, dateOptions);
 
 function saveRoutines() {
   localStorage.setItem('ironforge_routines', JSON.stringify(routines));
 }
+
 function saveCompleted() {
   localStorage.setItem('ironforge_completed', JSON.stringify(completedLog));
   updateProgress();
@@ -131,13 +149,13 @@ function switchTab(tab) {
   if (tab === 'tracker') {
     document.getElementById('trackerTab').classList.remove('hidden');
     document.getElementById('analyticsTab').classList.add('hidden');
-    document.getElementById('nav-tracker').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20";
-    document.getElementById('nav-analytics').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-400 hover:bg-slate-700";
+    document.getElementById('nav-tracker').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2";
+    document.getElementById('nav-analytics').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-400 hover:bg-slate-700 flex items-center justify-center gap-2";
   } else {
     document.getElementById('trackerTab').classList.add('hidden');
     document.getElementById('analyticsTab').classList.remove('hidden');
-    document.getElementById('nav-analytics').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20";
-    document.getElementById('nav-tracker').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-400 hover:bg-slate-700";
+    document.getElementById('nav-analytics').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2";
+    document.getElementById('nav-tracker').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-400 hover:bg-slate-700 flex items-center justify-center gap-2";
     renderAnalytics();
   }
 }
@@ -155,7 +173,7 @@ function renderDayTabs() {
           : 'bg-slate-800/90 text-slate-400 hover:bg-slate-700'
       }">
         <span>${r.day.slice(0, 3)}</span>
-        ${r.isRest ? '<span class="text-[9px] opacity-70">🛋️</span>' : ''}
+        ${r.isRest ? '<i class="fi fi-sr-bed text-[10px] opacity-70"></i>' : ''}
         ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>' : ''}
       </button>
     `;
@@ -179,13 +197,19 @@ function renderRoutine() {
     container.innerHTML = `
       <div class="text-center py-6 text-slate-400 space-y-2">
         <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-          <span class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full font-bold">Rest Day</span>
-          <button onclick="openDayConfigModal()" class="text-xs bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 font-semibold">⚙️ Customize Day</button>
+          <span class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5">
+            <i class="fi fi-sr-bed text-xs"></i> Rest Day
+          </span>
+          <button onclick="openDayConfigModal()" class="text-xs bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1 rounded-lg border border-slate-700 font-semibold flex items-center gap-1.5">
+            <i class="fi fi-sr-settings text-xs"></i> Customize Day
+          </button>
         </div>
         <p class="text-base font-bold text-slate-200 mt-2">${r.title}</p>
         <p class="text-xs text-slate-400 max-w-sm mx-auto">${r.description || 'No resistance workouts scheduled.'}</p>
         <div class="pt-3">
-          <button onclick="openModalForNew()" class="text-xs bg-sky-500/10 text-sky-400 border border-sky-500/30 px-3 py-1.5 rounded-lg font-semibold hover:bg-sky-500/20">+ Add Workout To This Day</button>
+          <button onclick="openModalForNew()" class="text-xs bg-sky-500/10 text-sky-400 border border-sky-500/30 px-3 py-1.5 rounded-lg font-semibold hover:bg-sky-500/20 flex items-center gap-1.5 mx-auto">
+            <i class="fi fi-sr-plus text-xs"></i> Add Workout To This Day
+          </button>
         </div>
       </div>
     `;
@@ -197,8 +221,12 @@ function renderRoutine() {
           <p class="text-[11px] text-slate-400 mt-0.5">${r.description || `${r.day} • Ascending Weight Targets`}</p>
         </div>
         <div class="flex items-center gap-1.5">
-          <button onclick="openDayConfigModal()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1.5 rounded-lg font-semibold">⚙️ Config</button>
-          <button onclick="openModalForNew()" class="text-[11px] bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-1.5 rounded-lg font-semibold">+ Add Lift</button>
+          <button onclick="openDayConfigModal()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1">
+            <i class="fi fi-sr-settings text-[10px]"></i> Config
+          </button>
+          <button onclick="openModalForNew()" class="text-[11px] bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1">
+            <i class="fi fi-sr-plus text-[10px]"></i> Add Lift
+          </button>
         </div>
       </div>
 
@@ -206,7 +234,7 @@ function renderRoutine() {
         ${r.exercises.length === 0 ? `
           <p class="text-xs text-slate-500 text-center py-4">No exercises added yet. Tap "+ Add Lift" above.</p>
         ` : r.exercises.map((ex, exIdx) => {
-          const key = `${r.id}_ex_${exIdx}`;
+          const key = getDateKey(`${r.id}_ex_${exIdx}`);
           const isDone = !!completedLog[key];
           return `
             <div class="p-3.5 rounded-xl border transition-all ${
@@ -216,7 +244,7 @@ function renderRoutine() {
             }">
               <div class="flex justify-between items-center mb-2.5">
                 <div class="flex items-center gap-2.5">
-                  <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleDone('${key}')" 
+                  <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleDone('${r.id}_ex_${exIdx}')" 
                          class="w-5 h-5 rounded border-slate-600 text-emerald-500 focus:ring-0 cursor-pointer" />
                   <span class="font-bold text-sm ${isDone ? 'line-through text-slate-400' : 'text-slate-100'}">${ex.name}</span>
                 </div>
@@ -242,7 +270,7 @@ function renderRoutine() {
     `;
   }
 
-  const tmKey = `${r.id}_treadmill`;
+  const tmKey = getDateKey(`${r.id}_treadmill`);
   const isTmDone = !!completedLog[tmKey];
   const hasCardio = r.treadmill.duration && r.treadmill.duration !== "0 min" && r.treadmill.duration !== "0";
 
@@ -250,10 +278,12 @@ function renderRoutine() {
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2.5">
         ${hasCardio ? `
-          <input type="checkbox" ${isTmDone ? 'checked' : ''} onchange="toggleDone('${tmKey}')" 
+          <input type="checkbox" ${isTmDone ? 'checked' : ''} onchange="toggleDone('${r.id}_treadmill')" 
                  class="w-5 h-5 rounded border-slate-600 text-emerald-500 focus:ring-0 cursor-pointer" />
         ` : ''}
-        <h3 class="font-bold text-sky-400 text-sm">🏃 Treadmill / Cardio Target</h3>
+        <h3 class="font-bold text-sky-400 text-sm flex items-center gap-1.5">
+          <i class="fi fi-sr-running text-sm"></i> Treadmill Target
+        </h3>
       </div>
       <span class="text-[11px] text-slate-300 font-medium bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
         ${hasCardio ? `${r.treadmill.incline} Incline • ${r.treadmill.speed} • ${r.treadmill.duration}` : 'Rest'}
@@ -266,7 +296,7 @@ function renderRoutine() {
 // --- 5. DAY CONFIGURATION MODAL ---
 function openDayConfigModal() {
   const r = routines.find(x => x.id === selectedDay);
-  document.getElementById('dayConfigTitle').textContent = `Customize ${r.day}`;
+  document.getElementById('dayConfigTitle').innerHTML = `<i class="fi fi-sr-settings text-sky-400 text-xs"></i> <span>Customize ${r.day}</span>`;
   document.getElementById('cfgTitle').value = r.title;
   document.getElementById('cfgDesc').value = r.description || "";
   document.getElementById('cfgTmTitle').value = r.treadmill.title || "";
@@ -289,11 +319,11 @@ function setModalDayType(isRest) {
   const btnRest = document.getElementById('btnStatusRest');
 
   if (isRest) {
-    btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-amber-500/50 bg-amber-500/20 text-amber-300";
-    btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500";
+    btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-amber-500/50 bg-amber-500/20 text-amber-300 flex items-center justify-center gap-1.5";
+    btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500 flex items-center justify-center gap-1.5";
   } else {
-    btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-emerald-500/50 bg-emerald-500/20 text-emerald-300";
-    btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500";
+    btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 flex items-center justify-center gap-1.5";
+    btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500 flex items-center justify-center gap-1.5";
   }
 }
 
@@ -321,7 +351,7 @@ function saveDayConfigChanges() {
 // --- 6. EXERCISE MODAL ---
 function openModalForNew() {
   editingExerciseIndex = null;
-  document.getElementById('modalTitle').textContent = "Add New Exercise";
+  document.getElementById('modalTitle').innerHTML = `<i class="fi fi-sr-plus text-sky-400 text-xs"></i> <span>Add New Exercise</span>`;
   document.getElementById('modalExName').value = "";
   renderModalSets([{ r: 12, w: "20kg" }, { r: 10, w: "22.5kg" }, { r: 8, w: "25kg" }]);
   document.getElementById('editModal').classList.remove('hidden');
@@ -331,7 +361,7 @@ function openModalForEdit(idx) {
   editingExerciseIndex = idx;
   const r = routines.find(x => x.id === selectedDay);
   const ex = r.exercises[idx];
-  document.getElementById('modalTitle').textContent = "Edit Exercise";
+  document.getElementById('modalTitle').innerHTML = `<i class="fi fi-sr-pencil text-sky-400 text-xs"></i> <span>Edit Exercise</span>`;
   document.getElementById('modalExName').value = ex.name;
   renderModalSets(ex.sets);
   document.getElementById('editModal').classList.remove('hidden');
@@ -402,8 +432,9 @@ function deleteExercise(idx) {
   updateProgress();
 }
 
-// --- 7. CHECK-OFFS & PROGRESS ---
-function toggleDone(key) {
+// --- 7. PROGRESS & ACTIVE LOGIC ---
+function toggleDone(rawKey) {
+  const key = getDateKey(rawKey);
   completedLog[key] = !completedLog[key];
   saveCompleted();
   renderRoutine();
@@ -428,46 +459,164 @@ function updateProgress() {
 
   let done = 0;
   r.exercises.forEach((_, idx) => {
-    if (completedLog[`${r.id}_ex_${idx}`]) done++;
+    if (completedLog[getDateKey(`${r.id}_ex_${idx}`)]) done++;
   });
-  if (hasCardio && completedLog[`${r.id}_treadmill`]) done++;
+  if (hasCardio && completedLog[getDateKey(`${r.id}_treadmill`)]) done++;
 
   const pct = Math.round((done / total) * 100);
   document.getElementById('progressBar').style.width = `${pct}%`;
   document.getElementById('progressText').textContent = `${pct}% Complete (${done}/${total})`;
 }
 
-// --- 8. ANALYTICS ---
-function renderAnalytics() {
-  let totalExCompleted = 0;
-  let totalCardioCompleted = 0;
+// --- 8. TIME-SERIES ANALYTICS ENGINE & GRAPH ---
+function getHistoricalStats(daysRange = 7) {
+  let liftCount = 0;
+  let cardioCount = 0;
+  const activeDates = new Set();
+  const dailyPoints = [];
 
-  routines.forEach(r => {
-    r.exercises.forEach((_, idx) => {
-      if (completedLog[`${r.id}_ex_${idx}`]) totalExCompleted++;
+  for (let i = daysRange - 1; i >= 0; i--) {
+    const dStr = getTodayDateString(-i);
+    let dayLifts = 0;
+    let dayCardio = 0;
+
+    Object.keys(completedLog).forEach(key => {
+      if (key.startsWith(dStr) && completedLog[key]) {
+        if (key.includes('_ex_')) dayLifts++;
+        if (key.includes('_treadmill')) dayCardio++;
+      }
     });
-    if (completedLog[`${r.id}_treadmill`]) totalCardioCompleted++;
-  });
 
-  document.getElementById('statCompletedEx').textContent = totalExCompleted;
-  document.getElementById('statCompletedCardio').textContent = `${totalCardioCompleted} Days`;
+    if (dayLifts > 0 || dayCardio > 0) activeDates.add(dStr);
+    liftCount += dayLifts;
+    cardioCount += dayCardio;
+    dailyPoints.push({ date: dStr, lifts: dayLifts, cardio: dayCardio });
+  }
+
+  const calorieBurn = (liftCount * 45) + (cardioCount * 180);
+  return { liftCount, cardioCount, activeDays: activeDates.size, calorieBurn, dailyPoints };
+}
+
+function setAnalyticsTimeframe(days) {
+  activeAnalyticsFilter = days;
+  document.querySelectorAll('.timeframe-btn').forEach(b => {
+    b.className = "timeframe-btn flex-1 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800 text-slate-400";
+  });
+  document.getElementById(`btn-timeframe-${days}`).className = "timeframe-btn flex-1 py-1.5 rounded-lg text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow";
+  renderAnalytics();
+}
+
+function renderAnalytics() {
+  const stats = getHistoricalStats(activeAnalyticsFilter);
+
+  if (document.getElementById('statCompletedEx')) {
+    document.getElementById('statCompletedEx').textContent = stats.liftCount;
+    document.getElementById('statCompletedCardio').textContent = stats.cardioCount;
+    document.getElementById('statCalorieBurn').textContent = `~${stats.calorieBurn} kcal`;
+    document.getElementById('statActiveDays').textContent = `${stats.activeDays} Days Active`;
+  }
 
   const weekContainer = document.getElementById('weekCheckmarks');
-  const ordered = [...routines.slice(1), routines[0]];
-  weekContainer.innerHTML = ordered.map(r => {
-    let isDone = false;
-    if (r.isRest || r.exercises.length === 0) {
-      isDone = true;
-    } else {
-      isDone = r.exercises.every((_, idx) => completedLog[`${r.id}_ex_${idx}`]);
-    }
-    return `
-      <div class="p-2 rounded-lg border ${isDone ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-500'}">
-        <span class="block font-bold">${r.day.slice(0, 1)}</span>
-        <span>${r.isRest ? '🛋️' : (isDone ? '✓' : '•')}</span>
-      </div>
-    `;
-  }).join('');
+  if (weekContainer) {
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) last7Days.push(getTodayDateString(-i));
+
+    weekContainer.innerHTML = last7Days.map(dStr => {
+      const dObj = new Date(dStr);
+      const dayLetter = ['S','M','T','W','T','F','S'][dObj.getDay()];
+      let hasDone = false;
+      Object.keys(completedLog).forEach(k => {
+        if (k.startsWith(dStr) && completedLog[k]) hasDone = true;
+      });
+
+      return `
+        <div class="p-2 rounded-lg border ${hasDone ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-500'}">
+          <span class="block font-bold text-[10px]">${dayLetter}</span>
+          <span class="text-xs">${hasDone ? '✓' : '•'}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  const badgeEx = document.getElementById('badgeExDone');
+  const badgeCardio = document.getElementById('badgeCardioDone');
+  if (badgeEx && badgeCardio) {
+    const weeklyStats = getHistoricalStats(7);
+    badgeEx.textContent = weeklyStats.liftCount;
+    badgeCardio.textContent = weeklyStats.cardioCount;
+  }
+
+  renderActivityChart(stats.dailyPoints);
+}
+
+function renderActivityChart(points) {
+  const canvas = document.getElementById('analyticsChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = canvas.clientWidth * dpr;
+  canvas.height = canvas.clientHeight * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  ctx.clearRect(0, 0, w, h);
+
+  if (!points || points.length === 0) return;
+
+  const maxVal = Math.max(...points.map(p => p.lifts + p.cardio), 5);
+  const stepX = (w - 40) / (points.length - 1 || 1);
+
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 1;
+  for (let i = 1; i <= 3; i++) {
+    const y = (h - 30) * (i / 3);
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(w - 20, y);
+    ctx.stroke();
+  }
+
+  const fillGrad = ctx.createLinearGradient(0, 0, 0, h);
+  fillGrad.addColorStop(0, 'rgba(56, 189, 248, 0.3)');
+  fillGrad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const total = p.lifts + p.cardio;
+    const x = 20 + i * stepX;
+    const y = (h - 30) - (total / maxVal) * (h - 50);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.lineTo(20 + (points.length - 1) * stepX, h - 20);
+  ctx.lineTo(20, h - 20);
+  ctx.fillStyle = fillGrad;
+  ctx.fill();
+
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const total = p.lifts + p.cardio;
+    const x = 20 + i * stepX;
+    const y = (h - 30) - (total / maxVal) * (h - 50);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  points.forEach((p, i) => {
+    const total = p.lifts + p.cardio;
+    const x = 20 + i * stepX;
+    const y = (h - 30) - (total / maxVal) * (h - 50);
+
+    ctx.fillStyle = total > 0 ? '#10b981' : '#334155';
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
 }
 
 function calcMacros() {
@@ -475,15 +624,13 @@ function calcMacros() {
   const targetW = parseFloat(document.getElementById('targetWeight').value) || 70;
   const deficit = parseFloat(document.getElementById('userDeficit').value) || 450;
 
-  // Persist values in user's isolated local storage
   localStorage.setItem('ironforge_weight', w);
   localStorage.setItem('ironforge_target_weight', targetW);
   localStorage.setItem('ironforge_deficit', deficit);
 
-  // Maintenance baseline ≈ (bodyweight in kg * 33) kcal
   const maintenance = Math.round(w * 33);
   const targetCalories = Math.max(1200, maintenance - deficit);
-  const protein = Math.round(w * 2.0); // 2.0g per kg
+  const protein = Math.round(w * 2.0);
 
   document.getElementById('calVal').textContent = `${targetCalories} kcal`;
   document.getElementById('protVal').textContent = `${protein}g`;
@@ -502,28 +649,28 @@ function resetToDefaults() {
   renderAnalytics();
 }
 
-// --- 9. INTERACTIVE DEMO TOUR (FIXED & SCROLL-SAFE) ---
+// --- 9. INTERACTIVE DEMO TOUR ---
 let currentTourStep = 0;
 const tourSteps = [
   {
     targetId: 'tour-step-1',
-    title: '🗓️ Auto-Detected Today Split',
-    text: 'The app automatically selects today\'s routine. You can tap any day to preview workouts or configure custom rest days.'
+    title: 'Auto-Detected Split',
+    text: 'IronForge automatically opens today\'s split. Tap any weekday button to inspect workouts or customize rest schedules.'
   },
   {
     targetId: 'tour-step-2',
-    title: '🏋️ Double-Muscle Pyramids',
-    text: 'Each exercise lists ascending weight targets. Tap the checkbox to check off completed sets with live progress updates.'
+    title: 'Double-Muscle Pyramids',
+    text: 'Each exercise lists ascending weight targets. Tap the checkbox to mark completed sets and trigger real-time progress calculations.'
   },
   {
     targetId: 'tour-step-3',
-    title: '🏃 Treadmill & Fat Loss Targets',
-    text: 'Specific incline and HIIT treadmill protocols are scheduled after lifts to accelerate fat loss while preserving muscle.'
+    title: 'Treadmill & Cardio Targets',
+    text: 'Incline LISS and HIIT protocols are programmed post-lift to burn calories without sacrificing muscle mass.'
   },
   {
     targetId: 'tour-step-4',
-    title: '📊 Analytics & Macro Planner',
-    text: 'Switch tabs anytime to calculate your target calorie deficit, protein intake, and view your 7-day consistency chart!'
+    title: 'Analytics & Macro Engine',
+    text: 'Switch tabs anytime to view your rolling time-series graph, active calorie burn, and adjust your personalized daily deficit.'
   }
 ];
 
@@ -546,12 +693,10 @@ function renderTourStep() {
     target.classList.add('tour-focus');
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    // Dynamic placement: Check if target is in top or bottom half of screen
     setTimeout(() => {
       const rect = target.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 
-      // If target is in the bottom half, place tour card at top so it doesn't overlap
       if (rect.top > viewportHeight / 2) {
         card.classList.remove('tour-card-bottom');
         card.classList.add('tour-card-top');
@@ -572,9 +717,10 @@ function renderTourStep() {
   `).join('');
 
   document.getElementById('tourPrevBtn').classList.toggle('hidden', currentTourStep === 0);
-  document.getElementById('tourNextBtn').textContent = currentTourStep === tourSteps.length - 1 ? "Let's Lift! 🚀" : "Next →";
+  document.getElementById('tourNextBtn').innerHTML = currentTourStep === tourSteps.length - 1 
+    ? `<span>Let's Lift!</span> <i class="fi fi-sr-rocket text-[10px]"></i>` 
+    : `<span>Next</span> <i class="fi fi-sr-arrow-right text-[10px]"></i>`;
 }
-
 
 function nextTourStep() {
   if (currentTourStep < tourSteps.length - 1) {
@@ -598,76 +744,13 @@ function endTour() {
   localStorage.setItem('ironforge_tour_completed', 'true');
 }
 
-// --- 10. PWA INSTALL PROMPT TRIGGER (ANDROID & IOS) ---
-let deferredPrompt = null;
-const installBanner = document.getElementById('pwaInstallBanner');
-const installBtn = document.getElementById('pwaInstallBtn');
-const installText = document.getElementById('pwaInstallText');
-
-// Android / Chrome Trigger
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBanner.classList.remove('hidden');
-});
-
-installBtn.addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      installBanner.classList.add('hidden');
-    }
-    deferredPrompt = null;
-  } else {
-    // iOS detection
-    const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
-    if (isIos) {
-      alert("To install on iOS: Tap the Safari Share button (⎋) at the bottom, then select 'Add to Home Screen' (+).");
-    }
-  }
-});
-
-// Show manual guide on iOS if opened in Safari browser (not standalone mode)
-const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-if (isIos && !isStandalone) {
-  installBanner.classList.remove('hidden');
-  installText.textContent = "Tap Share ⎋ then 'Add to Home Screen'";
-  installBtn.textContent = "Guide";
-}
-
-// --- 11. BOOTSTRAP ---
-// Inside Bootstrap / Initialization section
-document.getElementById('userWeight').value = localStorage.getItem('ironforge_weight') || 75;
-document.getElementById('targetWeight').value = localStorage.getItem('ironforge_target_weight') || 70;
-document.getElementById('userDeficit').value = localStorage.getItem('ironforge_deficit') || 450;
-
-renderDayTabs();
-renderRoutine();
-updateProgress();
-calcMacros();
-
-window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => startDemoTour(false), 500);
-});
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(console.error);
-  });
-}
-
-// --- 12. SOCIAL MEDIA SHARING & ACHIEVEMENTS ---
-
-// 1. Share Today's Immediate Workout Progress
+// --- 10. SOCIAL MEDIA SHARING & STORY GENERATOR ---
 async function shareTodayProgress() {
   const r = routines.find(x => x.id === selectedDay);
   const total = r.exercises.length;
   let done = 0;
   r.exercises.forEach((_, idx) => {
-    if (completedLog[`${r.id}_ex_${idx}`]) done++;
+    if (completedLog[getDateKey(`${r.id}_ex_${idx}`)]) done++;
   });
 
   const message = `⚡ Crushed today's ${r.title} session on IronForge! Completed ${done}/${total} lifts with ascending pyramids. #IronForge #GymGains`;
@@ -688,29 +771,15 @@ async function shareTodayProgress() {
   }
 }
 
-
-// 2. Share Weekly Achievement as Text Status
-
 async function shareTextStatus() {
-  let totalEx = 0;
-  let totalCardio = 0;
-  routines.forEach(r => {
-    r.exercises.forEach((_, idx) => {
-      if (completedLog[`${r.id}_ex_${idx}`]) totalEx++;
-    });
-    if (completedLog[`${r.id}_treadmill`]) totalCardio++;
-  });
-
-  const estimatedBurn = (totalEx * 45) + (totalCardio * 180);
-
-  // Clean text body without hardcoded trailing URL
+  const weeklyStats = getHistoricalStats(7);
   const messageBody = 
 `⚡ Most people wait for motivation. Discipline gets the reps done.
 
 My Weekly Vitals via IronForge:
-🏋️ ${totalEx} progressive pyramid sets logged
-🏃 ${totalCardio} cardiovascular fat-burn sessions
-🔥 ~${estimatedBurn} kcal active expenditure
+🏋️ ${weeklyStats.liftCount} progressive pyramid sets logged
+🏃 ${weeklyStats.cardioCount} cardiovascular fat-burn sessions
+🔥 ~${weeklyStats.calorieBurn} kcal active expenditure
 
 What did your workout consistency look like this week? Prioritize your health.`;
 
@@ -719,45 +788,30 @@ What did your workout consistency look like this week? Prioritize your health.`;
       await navigator.share({
         title: 'Weekly Discipline & Workout Report',
         text: messageBody,
-        url: window.location.href // Browser appends the URL once
+        url: window.location.href
       });
     } catch (err) {
       console.log('Share dismissed');
     }
   } else {
-    // Clipboard fallback appends URL exactly once
     navigator.clipboard.writeText(`${messageBody}\n\nTrack your split privately:\n${window.location.href}`);
-    alert('📋 Health report copied to clipboard! Paste it on WhatsApp, LinkedIn, or X.');
+    alert('📋 Health report copied to clipboard!');
   }
 }
 
-
-// 3. Generate a Visual Story/Post Card using Canvas & Share Image
-
 async function generateAndShareBadge() {
-  let totalEx = 0;
-  let totalCardio = 0;
+  const stats = getHistoricalStats(7);
   let totalPlannedEx = 0;
+  routines.forEach(r => { totalPlannedEx += r.exercises.length; });
 
-  routines.forEach(r => {
-    totalPlannedEx += r.exercises.length;
-    r.exercises.forEach((_, idx) => {
-      if (completedLog[`${r.id}_ex_${idx}`]) totalEx++;
-    });
-    if (completedLog[`${r.id}_treadmill`]) totalCardio++;
-  });
-
-  // Calculate dynamic health metrics
-  const completionRate = totalPlannedEx > 0 ? Math.round((totalEx / totalPlannedEx) * 100) : 0;
-  const estimatedBurn = (totalEx * 45) + (totalCardio * 180); // Conservative active workout expenditure
+  const completionRate = totalPlannedEx > 0 ? Math.round((stats.liftCount / totalPlannedEx) * 100) : 0;
   const rankTier = completionRate >= 80 ? "TITAN TIER 🔥" : completionRate >= 50 ? "WARRIOR TIER ⚡" : "REBUILDING TIER 🛡️";
 
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
-  canvas.height = 1920; // 9:16 Instagram/WhatsApp Story Format
+  canvas.height = 1920;
   const ctx = canvas.getContext('2d');
 
-  // 1. Dark Neon Cyber Mesh Background
   const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
   bgGrad.addColorStop(0, '#050811');
   bgGrad.addColorStop(0.4, '#091322');
@@ -765,7 +819,6 @@ async function generateAndShareBadge() {
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, 1080, 1920);
 
-  // Background glow circles for futuristic feel
   ctx.save();
   ctx.beginPath();
   ctx.arc(200, 300, 350, 0, Math.PI * 2);
@@ -777,12 +830,10 @@ async function generateAndShareBadge() {
   ctx.fill();
   ctx.restore();
 
-  // 2. High-Tech Frame
   ctx.strokeStyle = '#38bdf8';
   ctx.lineWidth = 6;
   ctx.strokeRect(50, 50, 980, 1820);
 
-  // Corner Accent Brackets
   function drawCorner(x, y, dx, dy) {
     ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 14;
@@ -797,7 +848,6 @@ async function generateAndShareBadge() {
   drawCorner(50, 1870, 60, -60);
   drawCorner(1030, 1870, -60, -60);
 
-  // 3. Top Header: Branding
   ctx.textAlign = 'center';
   ctx.fillStyle = '#38bdf8';
   ctx.font = '800 52px "Plus Jakarta Sans", sans-serif';
@@ -805,10 +855,8 @@ async function generateAndShareBadge() {
 
   ctx.fillStyle = '#64748b';
   ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
-  ctx.letterSpacing = '4px';
   ctx.fillText('HUMAN PERFORMANCE & BODY COMPOSITION', 540, 290);
 
-  // 4. Status Badge Pill
   ctx.save();
   ctx.beginPath();
   if (ctx.roundRect) ctx.roundRect(320, 360, 440, 70, 35);
@@ -823,7 +871,6 @@ async function generateAndShareBadge() {
   ctx.fillText(rankTier, 540, 406);
   ctx.restore();
 
-  // 5. Psychological Hook Headline
   ctx.fillStyle = '#ffffff';
   ctx.font = '800 68px "Plus Jakarta Sans", sans-serif';
   ctx.fillText('DISCIPLINE > MOTIVATION', 540, 550);
@@ -832,7 +879,6 @@ async function generateAndShareBadge() {
   ctx.font = '500 32px "Plus Jakarta Sans", sans-serif';
   ctx.fillText('Consistency data for the current training cycle:', 540, 610);
 
-  // Helper function to render glassmorphism stat cards
   function renderMetricCard(y, label, val, sublabel, accentColor) {
     ctx.save();
     ctx.beginPath();
@@ -844,17 +890,14 @@ async function generateAndShareBadge() {
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Accent Left Indicator Bar
     ctx.fillStyle = accentColor;
     ctx.fillRect(110, y + 35, 10, 140);
 
-    // Main Value
     ctx.textAlign = 'left';
     ctx.fillStyle = accentColor;
     ctx.font = '800 80px "Plus Jakarta Sans", sans-serif';
     ctx.fillText(val, 160, y + 115);
 
-    // Label & Subtitle
     ctx.fillStyle = '#ffffff';
     ctx.font = '700 34px "Plus Jakarta Sans", sans-serif';
     ctx.fillText(label, 160, y + 165);
@@ -867,16 +910,10 @@ async function generateAndShareBadge() {
     ctx.restore();
   }
 
-  // Card 1: Resistance Execution
-  renderMetricCard(690, 'Ascending Sets Completed', `${totalEx} Lifts`, `${completionRate}% Weekly Plan`, '#38bdf8');
+  renderMetricCard(690, 'Ascending Sets Completed', `${stats.liftCount} Lifts`, `${completionRate}% Weekly Plan`, '#38bdf8');
+  renderMetricCard(930, 'Fat Oxidation / Cardio Sessions', `${stats.cardioCount} Days`, 'Zone-2 / HIIT', '#10b981');
+  renderMetricCard(1170, 'Estimated Training Output', `~${stats.calorieBurn} kcal`, 'Target Deficit Sync', '#f59e0b');
 
-  // Card 2: Cardio & Heart Health
-  renderMetricCard(930, 'Fat Oxidation / Cardio Sessions', `${totalCardio} Days`, 'Zone-2 / HIIT', '#10b981');
-
-  // Card 3: Metabolic Activity
-  renderMetricCard(1170, 'Estimated Training Output', `~${estimatedBurn} kcal`, 'Target Deficit Sync', '#f59e0b');
-
-  // 6. Curiosity Call To Action Box (Inviting friends to check their split)
   ctx.save();
   ctx.beginPath();
   if (ctx.roundRect) ctx.roundRect(110, 1440, 860, 180, 24);
@@ -897,12 +934,10 @@ async function generateAndShareBadge() {
   ctx.fillText('Zero ads • Private • Progressive Overload Engine', 540, 1565);
   ctx.restore();
 
-  // 7. Footer Branding
   ctx.fillStyle = '#475569';
   ctx.font = '600 28px "Plus Jakarta Sans", sans-serif';
   ctx.fillText('Crafted by Rathindra Bera • ironforge.pwa', 540, 1750);
 
-  // 8. Trigger Web Share or Download
   canvas.toBlob(async (blob) => {
     if (!blob) return;
     const file = new File([blob], 'ironforge-health-status.png', { type: 'image/png' });
@@ -927,25 +962,66 @@ async function generateAndShareBadge() {
   }, 'image/png');
 }
 
-  
+// --- 11. PWA INSTALL TRIGGER (ANDROID & IOS) ---
+let deferredPrompt = null;
+const installBanner = document.getElementById('pwaInstallBanner');
+const installBtn = document.getElementById('pwaInstallBtn');
+const installText = document.getElementById('pwaInstallText');
 
-//------------------------
-//#########################
-// Update the live badges whenever analytics render
-const originalRenderAnalytics = renderAnalytics;
-renderAnalytics = function() {
-  originalRenderAnalytics();
-  let totalEx = 0;
-  let totalCardio = 0;
-  routines.forEach(r => {
-    r.exercises.forEach((_, idx) => {
-      if (completedLog[`${r.id}_ex_${idx}`]) totalEx++;
-    });
-    if (completedLog[`${r.id}_treadmill`]) totalCardio++;
-  });
-  if (document.getElementById('badgeExDone')) {
-    document.getElementById('badgeExDone').textContent = totalEx;
-    document.getElementById('badgeCardioDone').textContent = totalCardio;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBanner.classList.remove('hidden');
+});
+
+installBtn.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      installBanner.classList.add('hidden');
+    }
+    deferredPrompt = null;
+  } else {
+    const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIos) {
+      alert("To install on iOS: Tap the Safari Share button (⎋) at the bottom, then select 'Add to Home Screen' (+).");
+    }
   }
-};
-  
+});
+
+const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+if (isIos && !isStandalone) {
+  installBanner.classList.remove('hidden');
+  installText.textContent = "Tap Share ⎋ then 'Add to Home Screen'";
+  installBtn.innerHTML = `<span>Guide</span>`;
+}
+
+// --- 12. BOOTSTRAP INITIALIZATION ---
+document.getElementById('userWeight').value = localStorage.getItem('ironforge_weight') || 75;
+document.getElementById('targetWeight').value = localStorage.getItem('ironforge_target_weight') || 70;
+document.getElementById('userDeficit').value = localStorage.getItem('ironforge_deficit') || 450;
+
+renderDayTabs();
+renderRoutine();
+updateProgress();
+calcMacros();
+
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => startDemoTour(false), 500);
+});
+
+window.addEventListener('resize', () => {
+  if (!document.getElementById('analyticsTab').classList.contains('hidden')) {
+    const stats = getHistoricalStats(activeAnalyticsFilter);
+    renderActivityChart(stats.dailyPoints);
+  }
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(console.error);
+  });
+}
