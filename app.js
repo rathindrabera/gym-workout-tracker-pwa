@@ -690,6 +690,7 @@ async function shareTodayProgress() {
 }
 
 // 2. Share Weekly Achievement as Text Status
+
 async function shareTextStatus() {
   let totalEx = 0;
   let totalCardio = 0;
@@ -700,12 +701,25 @@ async function shareTextStatus() {
     if (completedLog[`${r.id}_treadmill`]) totalCardio++;
   });
 
-  const text = `🔥 Weekly Fitness Report on IronForge:\n💪 ${totalEx} Exercises Logged\n🏃 ${totalCardio} Cardio/Treadmill Sessions Finished\nConsistency is key! 🚀 #IronForge #FitnessGoals #WorkoutTracker`;
+  const estimatedBurn = (totalEx * 45) + (totalCardio * 180);
+
+  const text = 
+`⚡ Most people wait for motivation. Discipline gets the reps done.
+
+My Weekly Vitals via IronForge:
+🏋️ ${totalEx} progressive pyramid sets logged
+🏃 ${totalCardio} cardiovascular fat-burn sessions
+🔥 ~${estimatedBurn} kcal active expenditure
+
+What did your workout consistency look like this week? Prioritize your health. 
+
+Track your split privately here:
+${window.location.href}`;
 
   if (navigator.share) {
     try {
       await navigator.share({
-        title: 'My Weekly IronForge Gains',
+        title: 'Weekly Discipline & Workout Report',
         text: text,
         url: window.location.href
       });
@@ -714,118 +728,209 @@ async function shareTextStatus() {
     }
   } else {
     navigator.clipboard.writeText(text);
-    alert('📋 Achievement text copied to clipboard!');
+    alert('📋 Health update copied to clipboard! Paste it on WhatsApp Status, LinkedIn, or X.');
   }
 }
 
 // 3. Generate a Visual Story/Post Card using Canvas & Share Image
+
 async function generateAndShareBadge() {
   let totalEx = 0;
   let totalCardio = 0;
+  let totalPlannedEx = 0;
+
   routines.forEach(r => {
+    totalPlannedEx += r.exercises.length;
     r.exercises.forEach((_, idx) => {
       if (completedLog[`${r.id}_ex_${idx}`]) totalEx++;
     });
     if (completedLog[`${r.id}_treadmill`]) totalCardio++;
   });
 
+  // Calculate dynamic health metrics
+  const completionRate = totalPlannedEx > 0 ? Math.round((totalEx / totalPlannedEx) * 100) : 0;
+  const estimatedBurn = (totalEx * 45) + (totalCardio * 180); // Conservative active workout expenditure
+  const rankTier = completionRate >= 80 ? "TITAN TIER 🔥" : completionRate >= 50 ? "WARRIOR TIER ⚡" : "REBUILDING TIER 🛡️";
+
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
-  canvas.height = 1920;
+  canvas.height = 1920; // 9:16 Instagram/WhatsApp Story Format
   const ctx = canvas.getContext('2d');
 
-  // 1. Background Fill
+  // 1. Dark Neon Cyber Mesh Background
   const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
-  bgGrad.addColorStop(0, '#070b12');
-  bgGrad.addColorStop(0.5, '#0b1322');
-  bgGrad.addColorStop(1, '#051918');
+  bgGrad.addColorStop(0, '#050811');
+  bgGrad.addColorStop(0.4, '#091322');
+  bgGrad.addColorStop(1, '#041d1a');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, 1080, 1920);
 
-  // 2. Outer Border Frame
-  ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 14;
-  ctx.strokeRect(60, 60, 960, 1800);
+  // Background glow circles for futuristic feel
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(200, 300, 350, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(880, 1400, 400, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
+  ctx.fill();
+  ctx.restore();
 
-  // 3. Header Texts
+  // 2. High-Tech Frame
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(50, 50, 980, 1820);
+
+  // Corner Accent Brackets
+  function drawCorner(x, y, dx, dy) {
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 14;
+    ctx.beginPath();
+    ctx.moveTo(x, y + dy);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + dx, y);
+    ctx.stroke();
+  }
+  drawCorner(50, 50, 60, 60);
+  drawCorner(1030, 50, -60, 60);
+  drawCorner(50, 1870, 60, -60);
+  drawCorner(1030, 1870, -60, -60);
+
+  // 3. Top Header: Branding
   ctx.textAlign = 'center';
   ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 64px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('IRONFORGE', 540, 290);
+  ctx.font = '800 52px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('IRONFORGE PROTOCOL', 540, 240);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
+  ctx.letterSpacing = '4px';
+  ctx.fillText('HUMAN PERFORMANCE & BODY COMPOSITION', 540, 290);
+
+  // 4. Status Badge Pill
+  ctx.save();
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(320, 360, 440, 70, 35);
+  else ctx.rect(320, 360, 440, 70);
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+  ctx.fill();
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '800 28px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText(rankTier, 540, 406);
+  ctx.restore();
+
+  // 5. Psychological Hook Headline
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '800 68px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('DISCIPLINE > MOTIVATION', 540, 550);
 
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 32px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('WORKOUT & VITALS TRACKER', 540, 355);
+  ctx.font = '500 32px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('Consistency data for the current training cycle:', 540, 610);
 
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '800 70px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('WEEKLY GAINS UNLOCKED', 540, 620);
-
-  // Helper to draw rounded cards cleanly
-  function drawStatCard(y, numberText, labelText, numberColor) {
+  // Helper function to render glassmorphism stat cards
+  function renderMetricCard(y, label, val, sublabel, accentColor) {
     ctx.save();
     ctx.beginPath();
-    if (ctx.roundRect) {
-      ctx.roundRect(140, y, 800, 250, 32);
-    } else {
-      ctx.rect(140, y, 800, 250);
-    }
-    ctx.fillStyle = '#161f2e';
+    if (ctx.roundRect) ctx.roundRect(110, y, 860, 210, 28);
+    else ctx.rect(110, y, 860, 210);
+    ctx.fillStyle = '#0f172a';
     ctx.fill();
-    ctx.strokeStyle = '#2d3b55';
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 3;
     ctx.stroke();
-    ctx.closePath();
 
-    // Render Metric Value
-    ctx.fillStyle = numberColor;
-    ctx.font = '800 96px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(String(numberText), 540, y + 120);
+    // Accent Left Indicator Bar
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(110, y + 35, 10, 140);
 
-    // Render Metric Label
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '600 34px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(labelText, 540, y + 195);
+    // Main Value
+    ctx.textAlign = 'left';
+    ctx.fillStyle = accentColor;
+    ctx.font = '800 80px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(val, 160, y + 115);
+
+    // Label & Subtitle
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 34px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(label, 160, y + 165);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 26px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(sublabel, 930, y + 120);
+
     ctx.restore();
   }
 
-  // Card 1: Total Lifts (Emerald Green)
-  drawStatCard(760, totalEx, 'Total Lifts Logged', '#10b981');
+  // Card 1: Resistance Execution
+  renderMetricCard(690, 'Ascending Sets Completed', `${totalEx} Lifts`, `${completionRate}% Weekly Plan`, '#38bdf8');
 
-  // Card 2: Cardio Sessions (Cyan Blue)
-  drawStatCard(1080, `${totalCardio} Days`, 'Cardio & Treadmill Sessions', '#38bdf8');
+  // Card 2: Cardio & Heart Health
+  renderMetricCard(930, 'Fat Oxidation / Cardio Sessions', `${totalCardio} Days`, 'Zone-2 / HIIT', '#10b981');
 
-  // 4. Footer Developer Branding
-  ctx.fillStyle = '#64748b';
-  ctx.font = '600 32px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('Forged for gains by Rathindra Bera', 540, 1680);
+  // Card 3: Metabolic Activity
+  renderMetricCard(1170, 'Estimated Training Output', `~${estimatedBurn} kcal`, 'Target Deficit Sync', '#f59e0b');
 
-  // 5. Export to Image / Trigger Share
+  // 6. Curiosity Call To Action Box (Inviting friends to check their split)
+  ctx.save();
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(110, 1440, 860, 180, 24);
+  else ctx.rect(110, 1440, 860, 180);
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(16, 185, 129, 0.3)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#34d399';
+  ctx.font = '800 32px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('⚡ ARE YOU HITTING YOUR TARGET SPLIT?', 540, 1515);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '500 26px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('Zero ads • Private • Progressive Overload Engine', 540, 1565);
+  ctx.restore();
+
+  // 7. Footer Branding
+  ctx.fillStyle = '#475569';
+  ctx.font = '600 28px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('Crafted by Rathindra Bera • ironforge.pwa', 540, 1750);
+
+  // 8. Trigger Web Share or Download
   canvas.toBlob(async (blob) => {
     if (!blob) return;
-    const file = new File([blob], 'ironforge-weekly-gains.png', { type: 'image/png' });
+    const file = new File([blob], 'ironforge-health-status.png', { type: 'image/png' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
           files: [file],
-          title: 'IronForge Weekly Gains',
-          text: `🔥 Logged ${totalEx} lifts and ${totalCardio} cardio days on IronForge! 💪 #IronForge #Gains`
+          title: 'My Weekly Health & Muscle Report',
+          text: `⚡ 7 days of discipline on IronForge. Are you prioritizing your health this week? Check your double-muscle split.`
         });
       } catch (e) {
         console.log('Share dismissed');
       }
     } else {
       const link = document.createElement('a');
-      link.download = 'ironforge-weekly-gains.png';
+      link.download = 'ironforge-health-status.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
-      alert('🖼️ Weekly summary card downloaded! Ready to upload to your Instagram or WhatsApp Story.');
+      alert('🔥 High-res health story downloaded! Post it on Instagram / WhatsApp to challenge your friends.');
     }
   }, 'image/png');
 }
 
+  
 
+//------------------------
+//#########################
 // Update the live badges whenever analytics render
 const originalRenderAnalytics = renderAnalytics;
 renderAnalytics = function() {
