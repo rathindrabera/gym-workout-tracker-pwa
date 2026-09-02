@@ -698,18 +698,55 @@ window.closeScienceModal = function() {
   if (modal) modal.classList.add('hidden');
 };
 
-function resetToDefaults() {
-  if (!confirm("Reset all routines, custom groups, and treadmill targets to default split?")) return;
-  routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
+// --- COMPLETE PURGE & CLEAR ENGINE ---
+function clearAllWorkoutsAndData() {
+  const confirmed = confirm(
+    "⚠️ Clear all workout routines, exercises, and historical analytics?\n\nThis will erase all logged history and cannot be undone."
+  );
+  if (!confirmed) return;
+
+  // 1. Wipe all historical checkmarks and date-series logs
   completedLog = {};
-  saveRoutines();
-  saveCompleted();
+  localStorage.removeItem('ironforge_completed');
+
+  // 2. Clear exercises from every routine and reset to default rest states
+  routines = routines.map(r => ({
+    ...r,
+    title: r.isRest ? "Rest & Recovery" : "Custom Workout Day",
+    description: "",
+    exercises: [],
+    treadmill: {
+      title: "Cardio",
+      speed: "-",
+      incline: "-",
+      duration: "0 min",
+      desc: "No cardio logged."
+    }
+  }));
+  localStorage.setItem('ironforge_routines', JSON.stringify(routines));
+
+  // 3. Clear vitals and macro goals
+  localStorage.removeItem('ironforge_start_weight');
+  localStorage.removeItem('ironforge_weight');
+  localStorage.removeItem('ironforge_target_weight');
+  localStorage.removeItem('ironforge_deficit');
+
+  // Reset inputs if on screen
+  if (document.getElementById('startWeight')) document.getElementById('startWeight').value = '';
+  if (document.getElementById('currentWeight')) document.getElementById('currentWeight').value = '';
+  if (document.getElementById('targetWeight')) document.getElementById('targetWeight').value = '';
+  if (document.getElementById('userDeficit')) document.getElementById('userDeficit').value = '450';
+
+  // 4. Re-render UI components to clean state
   renderDayTabs();
   renderRoutine();
   updateProgress();
   renderAnalytics();
   calcMacros();
+
+  alert("🧹 All workouts, checkmarks, and tracking history have been cleared.");
 }
+
 
 // --- 10. INTERACTIVE DEMO TOUR ---
 let currentTourStep = 0;
