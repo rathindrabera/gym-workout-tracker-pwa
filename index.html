@@ -221,30 +221,41 @@
       </div>
     </section>
 
-    <!-- Target Deficit & Vitals Calculator -->
+    <!-- Target Deficit & Goal Planner -->
     <section class="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 space-y-4">
-      <h2 class="text-base font-bold text-emerald-400 flex items-center gap-2">
-        <i class="fi fi-sr-salad text-base"></i>
-        <span>Target Deficit &amp; Macro Planner</span>
-      </h2>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <h2 class="text-base font-bold text-emerald-400 flex items-center gap-2">
+            <i class="fi fi-sr-salad text-base"></i>
+            <span>Target Deficit &amp; Goal Planner</span>
+          </h2>
+          <button type="button" onclick="openScienceModal()" title="How is this calculated?" class="text-slate-400 hover:text-sky-400 transition-colors p-1 flex items-center">
+            <i class="fi fi-sr-info text-sm leading-none"></i>
+          </button>
+        </div>
+        <span id="goalTimelineBadge" class="text-[11px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold">
+          -- Weeks
+        </span>
+      </div>
+
       <div class="grid grid-cols-3 gap-2.5">
         <div>
           <label class="text-xs text-slate-400 block mb-1">Current (kg)</label>
-          <input type="number" id="userWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center" placeholder="75" onchange="calcMacros()" />
+          <input type="number" id="userWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center" placeholder="80" oninput="calcMacros()" />
         </div>
         <div>
           <label class="text-xs text-slate-400 block mb-1">Target (kg)</label>
-          <input type="number" id="targetWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center" placeholder="70" onchange="calcMacros()" />
+          <input type="number" id="targetWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center border-sky-500/40" placeholder="65" oninput="calcMacros()" />
         </div>
         <div>
           <label class="text-xs text-slate-400 block mb-1">Deficit (kcal)</label>
-          <input type="number" id="userDeficit" class="w-full rounded-lg p-2 text-sm font-semibold text-center border-amber-500/50" placeholder="450" step="50" onchange="calcMacros()" />
+          <input type="number" id="userDeficit" class="w-full rounded-lg p-2 text-sm font-semibold text-center border-amber-500/50" placeholder="450" step="50" oninput="calcMacros()" />
         </div>
       </div>
 
       <div class="grid grid-cols-3 gap-2 text-center pt-2 border-t border-slate-800 text-xs">
         <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/40">
-          <span class="text-slate-400 block text-[10px]">Target Calories</span>
+          <span class="text-slate-400 block text-[10px]">Daily Intake</span>
           <span id="calVal" class="text-emerald-400 font-bold text-sm">--</span>
         </div>
         <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/40">
@@ -252,9 +263,13 @@
           <span id="protVal" class="text-sky-400 font-bold text-sm">--</span>
         </div>
         <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/40">
-          <span class="text-slate-400 block text-[10px]">Active Deficit</span>
-          <span id="deficitBadge" class="text-amber-400 font-bold text-sm">-450 kcal</span>
+          <span class="text-slate-400 block text-[10px]">Weekly Rate</span>
+          <span id="lossRateVal" class="text-amber-400 font-bold text-sm">--</span>
         </div>
+      </div>
+
+      <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800 text-center text-xs text-slate-300" id="goalProjectionText">
+        Enter your current and target weight to generate your timeline projection.
       </div>
     </section>
 
@@ -393,7 +408,70 @@
     </div>
   </div>
 
-  <!-- MODAL 3: INTERACTIVE DEMO TOUR OVERLAY -->
+  <!-- MODAL 3: CALCULATION & SCIENCE EXPLAINER -->
+  <div id="scienceModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-white text-sm flex items-center gap-2">
+          <i class="fi fi-sr-calculator text-emerald-400 text-sm"></i>
+          <span>How Your Targets Are Calculated</span>
+        </h3>
+        <button onclick="closeScienceModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <div class="space-y-3.5 text-xs text-slate-300 leading-relaxed">
+        
+        <!-- Energy Balance -->
+        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/40 space-y-1">
+          <div class="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
+            <i class="fi fi-sr-flame text-amber-400"></i>
+            <span>1. Daily Calorie Intake</span>
+          </div>
+          <p class="text-slate-300">
+            <strong>Maintenance Baseline:</strong> Weight (kg) &times; 33 kcal. This formula models the Total Daily Energy Expenditure (TDEE) of an active individual weightlifting 4–5 days per week.
+          </p>
+          <p class="text-slate-400">
+            <strong>Your Target:</strong> We subtract your daily deficit (default: 450 kcal) to encourage steady fat oxidation while keeping gym performance high.
+          </p>
+        </div>
+
+        <!-- Protein Synthesis -->
+        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/40 space-y-1">
+          <div class="font-bold text-sky-400 flex items-center gap-1.5 text-xs">
+            <i class="fi fi-sr-steak text-rose-400"></i>
+            <span>2. Protein Target (2.0g / kg)</span>
+          </div>
+          <p class="text-slate-300">
+            In a caloric deficit, amino acids can be oxidized for energy.
+          </p>
+          <p class="text-slate-400">
+            Consuming 2.0 grams of protein per kilogram of body weight optimizes Muscle Protein Synthesis (MPS) and halts muscle catabolism during a cut.
+          </p>
+        </div>
+
+        <!-- Fat Loss Timeline -->
+        <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/40 space-y-1">
+          <div class="font-bold text-amber-400 flex items-center gap-1.5 text-xs">
+            <i class="fi fi-sr-clock text-amber-400"></i>
+            <span>3. Fat Loss Velocity &amp; Timeline</span>
+          </div>
+          <p class="text-slate-300">
+            <strong>The 7,700 kcal Rule:</strong> One kilogram of body fat contains approximately 7,700 kcal of stored energy.
+          </p>
+          <p class="text-slate-400">
+            A 450 kcal daily deficit accumulates to 3,150 kcal weekly, producing an optimal fat reduction rate of ~0.41 kg per week.
+          </p>
+        </div>
+
+      </div>
+
+      <button onclick="closeScienceModal()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-bold text-xs transition-all">
+        Got It!
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 4: INTERACTIVE DEMO TOUR OVERLAY -->
   <div id="tourModal" class="hidden">
     <div id="tourBackdrop" class="tour-backdrop" onclick="endTour()"></div>
     <div id="tourCard" class="tour-card-container">
