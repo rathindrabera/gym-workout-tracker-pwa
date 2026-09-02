@@ -9,9 +9,9 @@ const DEFAULT_ROUTINES = [
     day: "Sunday",
     dayIndex: 0,
     isRest: true,
-    title: "Full Rest Day",
-    description: "Complete physical and central nervous system recovery.",
-    treadmill: { title: "Complete Physical Rest", speed: "-", incline: "-", duration: "0 min", desc: "Hydration and recovery." },
+    title: "Rest & Recovery",
+    description: "Full rest and muscle recovery.",
+    treadmill: { title: "Rest", speed: "-", incline: "-", duration: "0 min", desc: "No cardio scheduled." },
     exercises: []
   },
   {
@@ -19,16 +19,12 @@ const DEFAULT_ROUTINES = [
     day: "Monday",
     dayIndex: 1,
     isRest: false,
-    title: "Upper Body A + Core",
-    description: "Chest, Back, Shoulders, Arms, and Direct Core flexions.",
-    treadmill: { title: "Incline Fat-Burn (LISS)", speed: "5.0 km/h", incline: "9%", duration: "20 min", desc: "Post-lift steady state zone-2 fat oxidation." },
+    title: "Upper Body (Chest & Back)",
+    description: "Horizontal pressing and vertical pulling.",
+    treadmill: { title: "Incline Walk", speed: "5.0 km/h", incline: "8%", duration: "15 min", desc: "Steady-state fat burn." },
     exercises: [
-      { name: "Incline DB Press", sets: [{ r: 12, w: "20kg" }, { r: 10, w: "22.5kg" }, { r: 8, w: "25kg" }, { r: 6, w: "27.5kg" }] },
-      { name: "Barbell Bent Rows", sets: [{ r: 10, w: "40kg" }, { r: 8, w: "45kg" }, { r: 8, w: "50kg" }, { r: 6, w: "55kg" }] },
-      { name: "Seated DB Shoulder Press", sets: [{ r: 12, w: "14kg" }, { r: 10, w: "16kg" }, { r: 8, w: "18kg" }] },
-      { name: "EZ-Bar Bicep Curls", sets: [{ r: 12, w: "20kg" }, { r: 10, w: "25kg" }, { r: 8, w: "27.5kg" }] },
-      { name: "Rope Triceps Pushdowns", sets: [{ r: 15, w: "20kg" }, { r: 12, w: "25kg" }, { r: 10, w: "30kg" }] },
-      { name: "Hanging Leg Raises (Core)", sets: [{ r: 15, w: "Body" }, { r: 15, w: "Body" }, { r: 12, w: "Body" }] }
+      { name: "Bench Press", sets: [{ r: 10, w: "20kg" }, { r: 8, w: "25kg" }, { r: 6, w: "30kg" }] },
+      { name: "Lat Pulldown / Pull-ups", sets: [{ r: 10, w: "35kg" }, { r: 8, w: "40kg" }, { r: 8, w: "45kg" }] }
     ]
   },
   {
@@ -36,14 +32,12 @@ const DEFAULT_ROUTINES = [
     day: "Tuesday",
     dayIndex: 2,
     isRest: false,
-    title: "Lower Body A (Quads/Hams)",
-    description: "Squat mechanics, posterior chain hinges, and calves.",
-    treadmill: { title: "HIIT Sprints", speed: "11.0 km/h", incline: "0%", duration: "15 min", desc: "30s sprint / 30s walk intervals × 10 rounds." },
+    title: "Lower Body (Quads & Calves)",
+    description: "Squat progression and calf hypertrophy.",
+    treadmill: { title: "HIIT Sprints", speed: "10.0 km/h", incline: "0%", duration: "12 min", desc: "30s sprint / 30s rest intervals." },
     exercises: [
-      { name: "Barbell Back Squats", sets: [{ r: 10, w: "60kg" }, { r: 8, w: "70kg" }, { r: 6, w: "80kg" }, { r: 6, w: "90kg" }] },
-      { name: "Romanian Deadlifts (RDL)", sets: [{ r: 10, w: "50kg" }, { r: 8, w: "60kg" }, { r: 8, w: "70kg" }] },
-      { name: "Bulgarian Split Squats", sets: [{ r: 10, w: "12kg" }, { r: 10, w: "14kg" }, { r: 10, w: "16kg" }] },
-      { name: "Calf Raises", sets: [{ r: 15, w: "40kg" }, { r: 15, w: "50kg" }, { r: 15, w: "60kg" }] }
+      { name: "Barbell Squats", sets: [{ r: 10, w: "40kg" }, { r: 8, w: "50kg" }, { r: 6, w: "60kg" }] },
+      { name: "Calf Raises", sets: [{ r: 15, w: "30kg" }, { r: 12, w: "40kg" }, { r: 10, w: "45kg" }] }
     ]
   },
   {
@@ -51,9 +45,9 @@ const DEFAULT_ROUTINES = [
     day: "Wednesday",
     dayIndex: 3,
     isRest: true,
-    title: "Active Rest Day",
-    description: "Active recovery, gentle mobility, and protein synthesis.",
-    treadmill: { title: "Mobility & Stretching", speed: "-", incline: "-", duration: "0 min", desc: "Active recovery and flexibility work." },
+    title: "Active Recovery",
+    description: "Mobility, core, and light stretching.",
+    treadmill: { title: "Recovery Walk", speed: "4.5 km/h", incline: "3%", duration: "15 min", desc: "Low-intensity flush." },
     exercises: []
   },
   {
@@ -61,16 +55,12 @@ const DEFAULT_ROUTINES = [
     day: "Thursday",
     dayIndex: 4,
     isRest: false,
-    title: "Upper Body B + Core",
-    description: "Horizontal pressing, cable rows, lateral delts, and ab wheel rollouts.",
-    treadmill: { title: "Incline Fat-Burn (LISS)", speed: "5.2 km/h", incline: "10%", duration: "20 min", desc: "Continuous incline fat-burning walk." },
+    title: "Push / Shoulders & Arms",
+    description: "Overhead power and direct arm work.",
+    treadmill: { title: "Incline Walk", speed: "5.0 km/h", incline: "10%", duration: "15 min", desc: "Steady fat burn." },
     exercises: [
-      { name: "Flat Barbell Bench Press", sets: [{ r: 10, w: "50kg" }, { r: 8, w: "55kg" }, { r: 6, w: "60kg" }, { r: 6, w: "65kg" }] },
-      { name: "Seated Cable Rows", sets: [{ r: 12, w: "40kg" }, { r: 10, w: "45kg" }, { r: 8, w: "50kg" }] },
-      { name: "DB Lateral Raises", sets: [{ r: 15, w: "7.5kg" }, { r: 12, w: "10kg" }, { r: 10, w: "10kg" }] },
-      { name: "Incline DB Hammer Curls", sets: [{ r: 12, w: "12kg" }, { r: 10, w: "14kg" }, { r: 8, w: "16kg" }] },
-      { name: "Overhead Tricep Extension", sets: [{ r: 12, w: "18kg" }, { r: 10, w: "22kg" }, { r: 8, w: "24kg" }] },
-      { name: "Ab Wheel Rollouts (Core)", sets: [{ r: 12, w: "Body" }, { r: 10, w: "Body" }, { r: 10, w: "Body" }] }
+      { name: "Overhead Shoulder Press", sets: [{ r: 10, w: "12kg" }, { r: 8, w: "14kg" }, { r: 8, w: "16kg" }] },
+      { name: "Dumbbell Bicep Curls", sets: [{ r: 12, w: "10kg" }, { r: 10, w: "12kg" }, { r: 8, w: "14kg" }] }
     ]
   },
   {
@@ -78,33 +68,26 @@ const DEFAULT_ROUTINES = [
     day: "Friday",
     dayIndex: 5,
     isRest: false,
-    title: "Lower Body B (Posterior Focus)",
-    description: "Heavy deadlifts, front squats, hamstrings, and isolated quads.",
-    treadmill: { title: "Incline Sprints HIIT", speed: "8.5 km/h", incline: "6%", duration: "15 min", desc: "30s run at 6% incline / 45s recovery walk × 8 rounds." },
+    title: "Posterior Chain (Hams & Back)",
+    description: "Hip hinge mechanics and row volume.",
+    treadmill: { title: "HIIT Conditioning", speed: "9.0 km/h", incline: "4%", duration: "15 min", desc: "Short interval bursts." },
     exercises: [
-      { name: "Deadlifts (Conventional)", sets: [{ r: 8, w: "70kg" }, { r: 6, w: "85kg" }, { r: 5, w: "100kg" }] },
-      { name: "Hack Squats / Front Squats", sets: [{ r: 10, w: "40kg" }, { r: 8, w: "50kg" }, { r: 8, w: "60kg" }] },
-      { name: "Lying Hamstring Curls", sets: [{ r: 12, w: "30kg" }, { r: 10, w: "35kg" }, { r: 10, w: "40kg" }] },
-      { name: "Leg Extensions", sets: [{ r: 15, w: "35kg" }, { r: 12, w: "45kg" }, { r: 10, w: "50kg" }] }
+      { name: "Romanian Deadlifts (RDL)", sets: [{ r: 10, w: "40kg" }, { r: 8, w: "50kg" }, { r: 6, w: "60kg" }] },
+      { name: "Seated Cable Rows", sets: [{ r: 12, w: "30kg" }, { r: 10, w: "35kg" }, { r: 8, w: "40kg" }] }
     ]
   },
   {
     id: "sat",
     day: "Saturday",
     dayIndex: 6,
-    isRest: false,
-    title: "Full Body Hypertrophy + Core",
-    description: "Upper/lower high-density hypertrophy + dragon flags.",
-    treadmill: { title: "Extended Incline Walk", speed: "5.0 km/h", incline: "11%", duration: "25 min", desc: "Long duration metabolic conditioning." },
-    exercises: [
-      { name: "DB Flat Press", sets: [{ r: 10, w: "22kg" }, { r: 8, w: "24kg" }, { r: 8, w: "26kg" }] },
-      { name: "Chest-Supported DB Rows", sets: [{ r: 10, w: "20kg" }, { r: 10, w: "22kg" }, { r: 8, w: "24kg" }] },
-      { name: "Leg Press", sets: [{ r: 12, w: "100kg" }, { r: 10, w: "120kg" }, { r: 8, w: "140kg" }] },
-      { name: "Cable Lateral Raises", sets: [{ r: 15, w: "5kg" }, { r: 12, w: "7.5kg" }, { r: 10, w: "7.5kg" }] },
-      { name: "Dragon Flags (Core)", sets: [{ r: 10, w: "Body" }, { r: 10, w: "Body" }, { r: 8, w: "Body" }] }
-    ]
+    isRest: true,
+    title: "Weekend Rest",
+    description: "Rest, hydrate, and prepare for next cycle.",
+    treadmill: { title: "Rest", speed: "-", incline: "-", duration: "0 min", desc: "No cardio scheduled." },
+    exercises: []
   }
 ];
+ 
 
 // --- 2. STATE & DATE HELPERS ---
 let routines = JSON.parse(localStorage.getItem('ironforge_routines')) || DEFAULT_ROUTINES;
@@ -620,22 +603,64 @@ function renderActivityChart(points) {
 }
 
 function calcMacros() {
-  const w = parseFloat(document.getElementById('userWeight').value) || 75;
-  const targetW = parseFloat(document.getElementById('targetWeight').value) || 70;
+  const currentW = parseFloat(document.getElementById('userWeight').value) || 0;
+  const targetW = parseFloat(document.getElementById('targetWeight').value) || 0;
   const deficit = parseFloat(document.getElementById('userDeficit').value) || 450;
 
-  localStorage.setItem('ironforge_weight', w);
-  localStorage.setItem('ironforge_target_weight', targetW);
+  if (currentW <= 0) return;
+
+  // Persist values
+  localStorage.setItem('ironforge_weight', currentW);
+  if (targetW > 0) localStorage.setItem('ironforge_target_weight', targetW);
   localStorage.setItem('ironforge_deficit', deficit);
 
-  const maintenance = Math.round(w * 33);
+  // 1. Daily Nutrition Targets
+  const maintenance = Math.round(currentW * 33);
   const targetCalories = Math.max(1200, maintenance - deficit);
-  const protein = Math.round(w * 2.0);
+  const protein = Math.round(currentW * 2.0); // 2.0g per kg to preserve lean tissue
 
   document.getElementById('calVal').textContent = `${targetCalories} kcal`;
   document.getElementById('protVal').textContent = `${protein}g`;
-  document.getElementById('deficitBadge').textContent = `-${deficit} kcal`;
+
+  // 2. Weekly Loss Velocity
+  // 1 kg body fat ≈ 7,700 kcal
+  const weeklyDeficit = deficit * 7;
+  const weeklyLossKg = (weeklyDeficit / 7700).toFixed(2);
+  document.getElementById('lossRateVal').textContent = `-${weeklyLossKg} kg/wk`;
+
+  // 3. Goal Projection Calculation
+  const badge = document.getElementById('goalTimelineBadge');
+  const projectionEl = document.getElementById('goalProjectionText');
+
+  if (targetW > 0 && targetW < currentW) {
+    const totalToLose = currentW - targetW;
+    const totalDaysNeeded = Math.round((totalToLose * 7700) / deficit);
+    const weeksNeeded = (totalDaysNeeded / 7).toFixed(1);
+
+    // Target arrival date
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + totalDaysNeeded);
+    const dateFormatted = targetDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+
+    badge.textContent = `~${weeksNeeded} Weeks`;
+    projectionEl.innerHTML = `To drop <span class="text-emerald-400 font-bold">${totalToLose.toFixed(1)} kg</span> at <span class="text-amber-400 font-bold">${deficit} kcal/day</span> deficit, target goal arrival is <span class="text-sky-400 font-bold">${dateFormatted}</span> (~${weeksNeeded} weeks).`;
+  } else if (targetW >= currentW) {
+    badge.textContent = "Maintain / Bulk";
+    projectionEl.innerHTML = `Target weight is equal to or above current weight. Adjust deficit to zero or surplus for lean mass acquisition.`;
+  } else {
+    badge.textContent = "-- Weeks";
+    projectionEl.textContent = "Enter your target weight to see the projected duration.";
+  }
 }
+
+function openScienceModal() {
+  document.getElementById('scienceModal').classList.remove('hidden');
+}
+
+function closeScienceModal() {
+  document.getElementById('scienceModal').classList.add('hidden');
+}
+
 
 function resetToDefaults() {
   if (!confirm("Reset all routines, custom groups, and treadmill targets to default split?")) return;
