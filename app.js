@@ -602,64 +602,86 @@ function renderActivityChart(points) {
   });
 }
 
-function calcMacros() {
-  const currentW = parseFloat(document.getElementById('userWeight').value) || 0;
-  const targetW = parseFloat(document.getElementById('targetWeight').value) || 0;
-  const deficit = parseFloat(document.getElementById('userDeficit').value) || 450;
+// --- SCIENCE MODAL HANDLERS ---
+window.openScienceModal = function() {
+  const modal = document.getElementById('scienceModal');
+  if (modal) modal.classList.remove('hidden');
+};
 
-  if (currentW <= 0) return;
+window.closeScienceModal = function() {
+  const modal = document.getElementById('scienceModal');
+  if (modal) modal.classList.add('hidden');
+};
 
-  // Persist values
-  localStorage.setItem('ironforge_weight', currentW);
-  if (targetW > 0) localStorage.setItem('ironforge_target_weight', targetW);
+// --- ROBUST TARGET DEFICIT & MACRO CALCULATOR ---
+window.calcMacros = function() {
+  const currentInput = document.getElementById('userWeight');
+  const targetInput = document.getElementById('targetWeight');
+  const deficitInput = document.getElementById('userDeficit');
+
+  if (!currentInput || !deficitInput) return;
+
+  const currentW = parseFloat(currentInput.value) || 0;
+  const targetW = parseFloat(targetInput ? targetInput.value : 0) || 0;
+  const deficit = parseFloat(deficitInput.value) || 450;
+
+  if (currentW > 0) {
+    localStorage.setItem('ironforge_weight', currentW);
+  }
+  if (targetW > 0) {
+    localStorage.setItem('ironforge_target_weight', targetW);
+  }
   localStorage.setItem('ironforge_deficit', deficit);
 
-  // 1. Daily Nutrition Targets
-  const maintenance = Math.round(currentW * 33);
-  const targetCalories = Math.max(1200, maintenance - deficit);
-  const protein = Math.round(currentW * 2.0); // 2.0g per kg to preserve lean tissue
+  // Fallback defaults if blank
+  const activeCurrentW = currentW > 0 ? currentW : 75;
+  const activeDeficit = deficit > 0 ? deficit : 450;
 
-  document.getElementById('calVal').textContent = `${targetCalories} kcal`;
-  document.getElementById('protVal').textContent = `${protein}g`;
+  // 1. Daily Intake & Protein
+  const maintenance = Math.round(activeCurrentW * 33);
+  const targetCalories = Math.max(1200, maintenance - activeDeficit);
+  const protein = Math.round(activeCurrentW * 2.0);
 
-  // 2. Weekly Loss Velocity
-  // 1 kg body fat ≈ 7,700 kcal
-  const weeklyDeficit = deficit * 7;
-  const weeklyLossKg = (weeklyDeficit / 7700).toFixed(2);
-  document.getElementById('lossRateVal').textContent = `-${weeklyLossKg} kg/wk`;
-
-  // 3. Goal Projection Calculation
-  const badge = document.getElementById('goalTimelineBadge');
+  const calEl = document.getElementById('calVal');
+  const protEl = document.getElementById('protVal');
+  const rateEl = document.getElementById('lossRateVal');
+  const badgeEl = document.getElementById('goalTimelineBadge');
   const projectionEl = document.getElementById('goalProjectionText');
 
-  if (targetW > 0 && targetW < currentW) {
-    const totalToLose = currentW - targetW;
-    const totalDaysNeeded = Math.round((totalToLose * 7700) / deficit);
-    const weeksNeeded = (totalDaysNeeded / 7).toFixed(1);
+  if (calEl) calEl.textContent = `${targetCalories} kcal`;
+  if (protEl) protEl.textContent = `${protein}g`;
 
-    // Target arrival date
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + totalDaysNeeded);
-    const dateFormatted = targetDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+  // 2. Weekly Loss Velocity (7700 kcal ≈ 1kg fat)
+  const weeklyLossKg = ((activeDeficit * 7) / 7700).toFixed(2);
+  if (rateEl) rateEl.textContent = `-${weeklyLossKg} kg/wk`;
 
-    badge.textContent = `~${weeksNeeded} Weeks`;
-    projectionEl.innerHTML = `To drop <span class="text-emerald-400 font-bold">${totalToLose.toFixed(1)} kg</span> at <span class="text-amber-400 font-bold">${deficit} kcal/day</span> deficit, target goal arrival is <span class="text-sky-400 font-bold">${dateFormatted}</span> (~${weeksNeeded} weeks).`;
-  } else if (targetW >= currentW) {
-    badge.textContent = "Maintain / Bulk";
-    projectionEl.innerHTML = `Target weight is equal to or above current weight. Adjust deficit to zero or surplus for lean mass acquisition.`;
+  // 3. Goal Projection Calculation
+  if (targetW > 0 && currentW > 0) {
+    if (targetW < currentW) {
+      const totalToLose = currentW - targetW;
+      const totalDaysNeeded = Math.round((totalToLose * 7700) / activeDeficit);
+      const weeksNeeded = (totalDaysNeeded / 7).toFixed(1);
+
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + totalDaysNeeded);
+      const dateFormatted = targetDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+
+      if (badgeEl) badgeEl.textContent = `~${weeksNeeded} Wks`;
+      if (projectionEl) {
+        projectionEl.innerHTML = `Drop <span class="text-emerald-400 font-bold">${totalToLose.toFixed(1)} kg</span> at <span class="text-amber-400 font-bold">${activeDeficit} kcal/day</span> deficit. Projected finish: <span class="text-sky-400 font-bold">${dateFormatted}</span> (~${weeksNeeded} weeks).`;
+      }
+    } else if (targetW === currentW) {
+      if (badgeEl) badgeEl.textContent = "Maintain";
+      if (projectionEl) projectionEl.textContent = "You are currently at your target weight. Set deficit to 0 for pure maintenance.";
+    } else {
+      if (badgeEl) badgeEl.textContent = "Lean Bulk";
+      if (projectionEl) projectionEl.textContent = "Target weight is higher than current weight. Increase calories to build muscle.";
+    }
   } else {
-    badge.textContent = "-- Weeks";
-    projectionEl.textContent = "Enter your target weight to see the projected duration.";
+    if (badgeEl) badgeEl.textContent = "-- Weeks";
+    if (projectionEl) projectionEl.textContent = "Enter your current and target weight to generate your timeline projection.";
   }
-}
-
-function openScienceModal() {
-  document.getElementById('scienceModal').classList.remove('hidden');
-}
-
-function closeScienceModal() {
-  document.getElementById('scienceModal').classList.add('hidden');
-}
+};
 
 
 function resetToDefaults() {
