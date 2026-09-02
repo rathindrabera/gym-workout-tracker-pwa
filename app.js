@@ -249,24 +249,50 @@ function updateRoutineSourceDropdown() {
   select.value = activeRoutineSource;
 }
 
+// 1. Routine Profile Switcher (Mine vs Imported) with Delete Trigger
 function switchRoutineSource(sourceKey) {
   activeRoutineSource = sourceKey;
   localStorage.setItem('ironforge_active_source', sourceKey);
 
   const badge = document.getElementById('activePlanOwnerBadge');
+  const deleteBtn = document.getElementById('deleteImportedBtn');
 
   if (sourceKey === 'mine') {
     routines = JSON.parse(localStorage.getItem('ironforge_routines')) || DEFAULT_ROUTINES;
     if (badge) badge.textContent = 'Primary Plan';
+    if (deleteBtn) deleteBtn.classList.add('hidden'); // Never allow deleting the primary routine
   } else if (importedRoutinesStore[sourceKey]) {
     routines = importedRoutinesStore[sourceKey].routines;
     if (badge) badge.textContent = `Shared by ${importedRoutinesStore[sourceKey].name}`;
+    if (deleteBtn) deleteBtn.classList.remove('hidden'); // Reveal delete button for imported plans
   }
 
   renderDayTabs();
   renderRoutine();
   updateProgress();
 }
+
+// 2. Delete Imported Routine Function
+function deleteActiveImportedRoutine() {
+  if (activeRoutineSource === 'mine') return;
+
+  const planToDelete = importedRoutinesStore[activeRoutineSource];
+  const planName = planToDelete ? planToDelete.name : 'this imported routine';
+
+  const confirmed = confirm(`Are you sure you want to remove ${planName}'s routine from your library?`);
+  if (!confirmed) return;
+
+  // Remove from memory and storage
+  delete importedRoutinesStore[activeRoutineSource];
+  localStorage.setItem('ironforge_imported_stores', JSON.stringify(importedRoutinesStore));
+
+  // Switch back to athlete's primary default routine
+  updateRoutineSourceDropdown();
+  switchRoutineSource('mine');
+
+  alert(`🗑️ Removed ${planName}'s routine.`);
+}
+
 
 // --- 5. NAVIGATION & TABS ---
 function switchTab(tab) {
