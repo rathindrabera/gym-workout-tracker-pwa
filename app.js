@@ -223,7 +223,10 @@ function syncProfileUI() {
   if (avatar) avatar.textContent = initials;
 
   const nameDisplay = document.getElementById('headerUserName');
-  if (nameDisplay) nameDisplay.textContent = `• ${userProfile.name}`;
+  if (nameDisplay) {
+    // Clean display without raw disconnected floating characters
+    nameDisplay.textContent = userProfile.name ? `(${userProfile.name})` : '';
+  }
 }
 
 function calculatePreciseBMR(weightKg, heightCm, ageYears, gender) {
