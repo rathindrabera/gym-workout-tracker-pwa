@@ -2,7 +2,7 @@
 // IRONFORGE - DOUBLE MUSCLE WORKOUT TRACKER
 // ==========================================
 
-// --- 1. DEFAULT ROUTINE CONFIGURATION ---
+// --- 1. DEFAULT ROUTINE CONFIGURATION (TEMPLATE FIRST) ---
 const DEFAULT_ROUTINES = [
   {
     id: "sun",
@@ -87,7 +87,6 @@ const DEFAULT_ROUTINES = [
     exercises: []
   }
 ];
- 
 
 // --- 2. STATE & DATE HELPERS ---
 let routines = JSON.parse(localStorage.getItem('ironforge_routines')) || DEFAULT_ROUTINES;
@@ -139,7 +138,11 @@ function switchTab(tab) {
     document.getElementById('analyticsTab').classList.remove('hidden');
     document.getElementById('nav-analytics').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2";
     document.getElementById('nav-tracker').className = "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-800 text-slate-400 hover:bg-slate-700 flex items-center justify-center gap-2";
-    renderAnalytics();
+    
+    setTimeout(() => {
+      renderAnalytics();
+      calcMacros();
+    }, 50);
   }
 }
 
@@ -201,7 +204,7 @@ function renderRoutine() {
       <div class="flex justify-between items-start border-b border-slate-800 pb-3">
         <div>
           <h2 class="text-base font-bold text-white">${r.title}</h2>
-          <p class="text-[11px] text-slate-400 mt-0.5">${r.description || `${r.day} • Ascending Weight Targets`}</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">${r.description || `${r.day} • Ascending Targets`}</p>
         </div>
         <div class="flex items-center gap-1.5">
           <button onclick="openDayConfigModal()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1">
@@ -336,7 +339,7 @@ function openModalForNew() {
   editingExerciseIndex = null;
   document.getElementById('modalTitle').innerHTML = `<i class="fi fi-sr-plus text-sky-400 text-xs"></i> <span>Add New Exercise</span>`;
   document.getElementById('modalExName').value = "";
-  renderModalSets([{ r: 12, w: "20kg" }, { r: 10, w: "22.5kg" }, { r: 8, w: "25kg" }]);
+  renderModalSets([{ r: 10, w: "20kg" }, { r: 8, w: "25kg" }, { r: 6, w: "30kg" }]);
   document.getElementById('editModal').classList.remove('hidden');
 }
 
@@ -602,39 +605,26 @@ function renderActivityChart(points) {
   });
 }
 
-// --- SCIENCE MODAL HANDLERS ---
-window.openScienceModal = function() {
-  const modal = document.getElementById('scienceModal');
-  if (modal) modal.classList.remove('hidden');
-};
-
-window.closeScienceModal = function() {
-  const modal = document.getElementById('scienceModal');
-  if (modal) modal.classList.add('hidden');
-};
-
-// --- ROBUST TARGET DEFICIT & MACRO CALCULATOR ---
+// --- 9. 3-TIER GOAL & MACRO PLANNER ENGINE ---
 window.calcMacros = function() {
-  const currentInput = document.getElementById('userWeight');
+  const startInput = document.getElementById('startWeight');
+  const currentInput = document.getElementById('currentWeight');
   const targetInput = document.getElementById('targetWeight');
   const deficitInput = document.getElementById('userDeficit');
 
   if (!currentInput || !deficitInput) return;
 
+  const startW = parseFloat(startInput ? startInput.value : 0) || 0;
   const currentW = parseFloat(currentInput.value) || 0;
   const targetW = parseFloat(targetInput ? targetInput.value : 0) || 0;
   const deficit = parseFloat(deficitInput.value) || 450;
 
-  if (currentW > 0) {
-    localStorage.setItem('ironforge_weight', currentW);
-  }
-  if (targetW > 0) {
-    localStorage.setItem('ironforge_target_weight', targetW);
-  }
+  if (startW > 0) localStorage.setItem('ironforge_start_weight', startW);
+  if (currentW > 0) localStorage.setItem('ironforge_weight', currentW);
+  if (targetW > 0) localStorage.setItem('ironforge_target_weight', targetW);
   localStorage.setItem('ironforge_deficit', deficit);
 
-  // Fallback defaults if blank
-  const activeCurrentW = currentW > 0 ? currentW : 75;
+  const activeCurrentW = currentW > 0 ? currentW : (startW > 0 ? startW : 75);
   const activeDeficit = deficit > 0 ? deficit : 450;
 
   // 1. Daily Intake & Protein
@@ -651,15 +641,31 @@ window.calcMacros = function() {
   if (calEl) calEl.textContent = `${targetCalories} kcal`;
   if (protEl) protEl.textContent = `${protein}g`;
 
-  // 2. Weekly Loss Velocity (7700 kcal ≈ 1kg fat)
+  // 2. Weekly Loss Velocity
   const weeklyLossKg = ((activeDeficit * 7) / 7700).toFixed(2);
   if (rateEl) rateEl.textContent = `-${weeklyLossKg} kg/wk`;
 
-  // 3. Goal Projection Calculation
-  if (targetW > 0 && currentW > 0) {
-    if (targetW < currentW) {
-      const totalToLose = currentW - targetW;
-      const totalDaysNeeded = Math.round((totalToLose * 7700) / activeDeficit);
+  // 3. Transformation Milestones Calculation
+  const progressBar = document.getElementById('bodyTransformationBar');
+  const percentBadge = document.getElementById('progressPercentBadge');
+  const lostLabel = document.getElementById('statWeightLost');
+  const remainingLabel = document.getElementById('statWeightRemaining');
+  const badgeLostSoFar = document.getElementById('badgeLostSoFar');
+
+  if (startW > 0 && currentW > 0 && targetW > 0 && startW > targetW) {
+    const totalToCut = startW - targetW;
+    const lostSoFar = Math.max(0, startW - currentW);
+    const remainingToLose = Math.max(0, currentW - targetW);
+    const progressPercent = Math.min(100, Math.max(0, Math.round((lostSoFar / totalToCut) * 100)));
+
+    if (progressBar) progressBar.style.width = `${progressPercent}%`;
+    if (percentBadge) percentBadge.textContent = `${progressPercent}% Complete`;
+    if (lostLabel) lostLabel.textContent = `${lostSoFar.toFixed(1)} kg`;
+    if (remainingLabel) remainingLabel.textContent = `${remainingToLose.toFixed(1)} kg`;
+    if (badgeLostSoFar) badgeLostSoFar.textContent = `${lostSoFar.toFixed(1)} kg`;
+
+    if (remainingToLose > 0) {
+      const totalDaysNeeded = Math.round((remainingToLose * 7700) / activeDeficit);
       const weeksNeeded = (totalDaysNeeded / 7).toFixed(1);
 
       const targetDate = new Date();
@@ -668,21 +674,29 @@ window.calcMacros = function() {
 
       if (badgeEl) badgeEl.textContent = `~${weeksNeeded} Wks`;
       if (projectionEl) {
-        projectionEl.innerHTML = `Drop <span class="text-emerald-400 font-bold">${totalToLose.toFixed(1)} kg</span> at <span class="text-amber-400 font-bold">${activeDeficit} kcal/day</span> deficit. Projected finish: <span class="text-sky-400 font-bold">${dateFormatted}</span> (~${weeksNeeded} weeks).`;
+        projectionEl.innerHTML = `You have melted <span class="text-emerald-400 font-bold">${lostSoFar.toFixed(1)} kg</span> so far! With <span class="text-amber-400 font-bold">${remainingToLose.toFixed(1)} kg remaining</span>, projected finish is <span class="text-sky-400 font-bold">${dateFormatted}</span> (~${weeksNeeded} weeks).`;
       }
-    } else if (targetW === currentW) {
-      if (badgeEl) badgeEl.textContent = "Maintain";
-      if (projectionEl) projectionEl.textContent = "You are currently at your target weight. Set deficit to 0 for pure maintenance.";
     } else {
-      if (badgeEl) badgeEl.textContent = "Lean Bulk";
-      if (projectionEl) projectionEl.textContent = "Target weight is higher than current weight. Increase calories to build muscle.";
+      if (badgeEl) badgeEl.textContent = "Goal Hit! 🏆";
+      if (projectionEl) projectionEl.innerHTML = `<span class="text-emerald-400 font-bold">Goal achieved!</span> You have successfully dropped from ${startW} kg to ${currentW} kg!`;
     }
   } else {
+    if (progressBar) progressBar.style.width = '0%';
+    if (percentBadge) percentBadge.textContent = '0%';
     if (badgeEl) badgeEl.textContent = "-- Weeks";
-    if (projectionEl) projectionEl.textContent = "Enter your current and target weight to generate your timeline projection.";
+    if (badgeLostSoFar) badgeLostSoFar.textContent = "0.0 kg";
   }
 };
 
+window.openScienceModal = function() {
+  const modal = document.getElementById('scienceModal');
+  if (modal) modal.classList.remove('hidden');
+};
+
+window.closeScienceModal = function() {
+  const modal = document.getElementById('scienceModal');
+  if (modal) modal.classList.add('hidden');
+};
 
 function resetToDefaults() {
   if (!confirm("Reset all routines, custom groups, and treadmill targets to default split?")) return;
@@ -694,9 +708,10 @@ function resetToDefaults() {
   renderRoutine();
   updateProgress();
   renderAnalytics();
+  calcMacros();
 }
 
-// --- 9. INTERACTIVE DEMO TOUR ---
+// --- 10. INTERACTIVE DEMO TOUR ---
 let currentTourStep = 0;
 const tourSteps = [
   {
@@ -791,7 +806,7 @@ function endTour() {
   localStorage.setItem('ironforge_tour_completed', 'true');
 }
 
-// --- 10. SOCIAL MEDIA SHARING & STORY GENERATOR ---
+// --- 11. SOCIAL MEDIA SHARING & STORY GENERATOR ---
 async function shareTodayProgress() {
   const r = routines.find(x => x.id === selectedDay);
   const total = r.exercises.length;
@@ -820,20 +835,31 @@ async function shareTodayProgress() {
 
 async function shareTextStatus() {
   const weeklyStats = getHistoricalStats(7);
+  const startW = parseFloat(localStorage.getItem('ironforge_start_weight')) || 0;
+  const currentW = parseFloat(localStorage.getItem('ironforge_weight')) || 0;
+  const targetW = parseFloat(localStorage.getItem('ironforge_target_weight')) || 0;
+  
+  let transformationText = "";
+  if (startW > 0 && currentW > 0 && targetW > 0) {
+    const lost = Math.max(0, startW - currentW).toFixed(1);
+    const remaining = Math.max(0, currentW - targetW).toFixed(1);
+    transformationText = `\n📉 Transformation: -${lost} kg lost (${remaining} kg remaining to goal)`;
+  }
+
   const messageBody = 
 `⚡ Most people wait for motivation. Discipline gets the reps done.
 
-My Weekly Vitals via IronForge:
+My Vitals & Gains via IronForge:${transformationText}
 🏋️ ${weeklyStats.liftCount} progressive pyramid sets logged
 🏃 ${weeklyStats.cardioCount} cardiovascular fat-burn sessions
-🔥 ~${weeklyStats.calorieBurn} kcal active expenditure
+🔥 ~${weeklyStats.calorieBurn} kcal active training output
 
 What did your workout consistency look like this week? Prioritize your health.`;
 
   if (navigator.share) {
     try {
       await navigator.share({
-        title: 'Weekly Discipline & Workout Report',
+        title: 'Weekly Discipline & Body Transformation Report',
         text: messageBody,
         url: window.location.href
       });
@@ -851,14 +877,20 @@ async function generateAndShareBadge() {
   let totalPlannedEx = 0;
   routines.forEach(r => { totalPlannedEx += r.exercises.length; });
 
+  const startW = parseFloat(localStorage.getItem('ironforge_start_weight')) || 0;
+  const currentW = parseFloat(localStorage.getItem('ironforge_weight')) || 0;
+  const targetW = parseFloat(localStorage.getItem('ironforge_target_weight')) || 0;
+  const lostSoFar = (startW > 0 && currentW > 0) ? Math.max(0, startW - currentW).toFixed(1) : "0.0";
+
   const completionRate = totalPlannedEx > 0 ? Math.round((stats.liftCount / totalPlannedEx) * 100) : 0;
-  const rankTier = completionRate >= 80 ? "TITAN TIER 🔥" : completionRate >= 50 ? "WARRIOR TIER ⚡" : "REBUILDING TIER 🛡️";
+  const rankTier = completionRate >= 80 ? "TITAN TIER 🔥" : completionRate >= 50 ? "WARRIOR TIER ⚡" : "ACTIVE CUT TIER 🛡️";
 
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
   canvas.height = 1920;
   const ctx = canvas.getContext('2d');
 
+  // Background
   const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
   bgGrad.addColorStop(0, '#050811');
   bgGrad.addColorStop(0.4, '#091322');
@@ -902,7 +934,7 @@ async function generateAndShareBadge() {
 
   ctx.fillStyle = '#64748b';
   ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('HUMAN PERFORMANCE & BODY COMPOSITION', 540, 290);
+  ctx.fillText('BODY TRANSFORMATION & CONSISTENCY', 540, 290);
 
   ctx.save();
   ctx.beginPath();
@@ -924,7 +956,7 @@ async function generateAndShareBadge() {
 
   ctx.fillStyle = '#94a3b8';
   ctx.font = '500 32px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('Consistency data for the current training cycle:', 540, 610);
+  ctx.fillText('Verified progress for the current training cycle:', 540, 610);
 
   function renderMetricCard(y, label, val, sublabel, accentColor) {
     ctx.save();
@@ -957,9 +989,14 @@ async function generateAndShareBadge() {
     ctx.restore();
   }
 
-  renderMetricCard(690, 'Ascending Sets Completed', `${stats.liftCount} Lifts`, `${completionRate}% Weekly Plan`, '#38bdf8');
-  renderMetricCard(930, 'Fat Oxidation / Cardio Sessions', `${stats.cardioCount} Days`, 'Zone-2 / HIIT', '#10b981');
-  renderMetricCard(1170, 'Estimated Training Output', `~${stats.calorieBurn} kcal`, 'Target Deficit Sync', '#f59e0b');
+  // Card 1: Fat Lost Milestone
+  renderMetricCard(690, 'Body Transformation Progress', `-${lostSoFar} kg`, `${currentW}kg Current / ${targetW}kg Goal`, '#10b981');
+
+  // Card 2: Resistance Execution
+  renderMetricCard(930, 'Ascending Sets Logged', `${stats.liftCount} Sets`, `${completionRate}% Weekly Plan`, '#38bdf8');
+
+  // Card 3: Cardio & Training Expenditure
+  renderMetricCard(1170, 'Cardio & Active Burn', `~${stats.calorieBurn} kcal`, `${stats.cardioCount} Sessions Completed`, '#f59e0b');
 
   ctx.save();
   ctx.beginPath();
@@ -974,11 +1011,11 @@ async function generateAndShareBadge() {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#34d399';
   ctx.font = '800 32px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('⚡ ARE YOU HITTING YOUR TARGET SPLIT?', 540, 1515);
+  ctx.fillText('⚡ ARE YOU HITTING YOUR TARGET DEFICIT?', 540, 1515);
 
   ctx.fillStyle = '#94a3b8';
   ctx.font = '500 26px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('Zero ads • Private • Progressive Overload Engine', 540, 1565);
+  ctx.fillText('Zero ads • Private • Double-Muscle Split Engine', 540, 1565);
   ctx.restore();
 
   ctx.fillStyle = '#475569';
@@ -987,29 +1024,29 @@ async function generateAndShareBadge() {
 
   canvas.toBlob(async (blob) => {
     if (!blob) return;
-    const file = new File([blob], 'ironforge-health-status.png', { type: 'image/png' });
+    const file = new File([blob], 'ironforge-transformation-status.png', { type: 'image/png' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
           files: [file],
-          title: 'My Weekly Health & Muscle Report',
-          text: `⚡ 7 days of discipline on IronForge. Are you prioritizing your health this week? Check your double-muscle split.`
+          title: 'My Transformation & Workout Status',
+          text: `⚡ Down ${lostSoFar} kg and crushing weekly consistency on IronForge! Are you prioritizing your health?`
         });
       } catch (e) {
         console.log('Share dismissed');
       }
     } else {
       const link = document.createElement('a');
-      link.download = 'ironforge-health-status.png';
+      link.download = 'ironforge-transformation-status.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
-      alert('🔥 High-res health story downloaded! Post it on Instagram / WhatsApp to challenge your friends.');
+      alert('🔥 High-res transformation story downloaded! Post it on Instagram / WhatsApp to inspire your circle.');
     }
   }, 'image/png');
 }
 
-// --- 11. PWA INSTALL TRIGGER (ANDROID & IOS) ---
+// --- 12. PWA INSTALL TRIGGER (ANDROID & IOS) ---
 let deferredPrompt = null;
 const installBanner = document.getElementById('pwaInstallBanner');
 const installBtn = document.getElementById('pwaInstallBtn');
@@ -1046,9 +1083,10 @@ if (isIos && !isStandalone) {
   installBtn.innerHTML = `<span>Guide</span>`;
 }
 
-// --- 12. BOOTSTRAP INITIALIZATION ---
-document.getElementById('userWeight').value = localStorage.getItem('ironforge_weight') || 75;
-document.getElementById('targetWeight').value = localStorage.getItem('ironforge_target_weight') || 70;
+// --- 13. BOOTSTRAP INITIALIZATION ---
+document.getElementById('startWeight').value = localStorage.getItem('ironforge_start_weight') || 85;
+document.getElementById('currentWeight').value = localStorage.getItem('ironforge_weight') || 82;
+document.getElementById('targetWeight').value = localStorage.getItem('ironforge_target_weight') || 75;
 document.getElementById('userDeficit').value = localStorage.getItem('ironforge_deficit') || 450;
 
 renderDayTabs();
