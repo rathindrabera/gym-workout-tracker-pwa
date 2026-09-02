@@ -229,7 +229,7 @@
             <i class="fi fi-sr-salad text-base"></i>
             <span>Target Deficit &amp; Goal Planner</span>
           </h2>
-          <button type="button" onclick="openScienceModal()" title="How is this calculated?" class="text-slate-400 hover:text-sky-400 transition-colors p-1 flex items-center">
+          <button type="button" onclick="openScienceModal()" class="cursor-pointer text-slate-400 hover:text-sky-400 p-1 flex items-center">
             <i class="fi fi-sr-info text-sm leading-none"></i>
           </button>
         </div>
@@ -241,15 +241,15 @@
       <div class="grid grid-cols-3 gap-2.5">
         <div>
           <label class="text-xs text-slate-400 block mb-1">Current (kg)</label>
-          <input type="number" id="userWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center" placeholder="80" oninput="calcMacros()" />
+          <input type="number" id="userWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center" placeholder="80" oninput="calcMacros()" onchange="calcMacros()" />
         </div>
         <div>
           <label class="text-xs text-slate-400 block mb-1">Target (kg)</label>
-          <input type="number" id="targetWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center border-sky-500/40" placeholder="65" oninput="calcMacros()" />
+          <input type="number" id="targetWeight" class="w-full rounded-lg p-2 text-sm font-semibold text-center border border-sky-500/40" placeholder="65" oninput="calcMacros()" onchange="calcMacros()" />
         </div>
         <div>
           <label class="text-xs text-slate-400 block mb-1">Deficit (kcal)</label>
-          <input type="number" id="userDeficit" class="w-full rounded-lg p-2 text-sm font-semibold text-center border-amber-500/50" placeholder="450" step="50" oninput="calcMacros()" />
+          <input type="number" id="userDeficit" class="w-full rounded-lg p-2 text-sm font-semibold text-center border border-amber-500/50" placeholder="450" step="50" oninput="calcMacros()" onchange="calcMacros()" />
         </div>
       </div>
 
@@ -272,6 +272,7 @@
         Enter your current and target weight to generate your timeline projection.
       </div>
     </section>
+    
 
     <!-- Reset & Tour Actions -->
     <section class="p-4 text-center space-y-3">
