@@ -670,24 +670,24 @@ async function shareTodayProgress() {
     if (completedLog[`${r.id}_ex_${idx}`]) done++;
   });
 
-  const shareData = {
-    title: 'IronForge Workout Progress',
-    text: `⚡ Crushed today's ${r.title} session on IronForge! Completed ${done}/${total} lifts with ascending pyramids. #IronForge #GymGains #DoubleMuscleSplit`,
-    url: window.location.href
-  };
+  const message = `⚡ Crushed today's ${r.title} session on IronForge! Completed ${done}/${total} lifts with ascending pyramids. #IronForge #GymGains`;
 
   if (navigator.share) {
     try {
-      await navigator.share(shareData);
+      await navigator.share({
+        title: 'IronForge Workout Progress',
+        text: message,
+        url: window.location.href
+      });
     } catch (err) {
       console.log('Share dismissed');
     }
   } else {
-    // Fallback: Copy to clipboard
-    navigator.clipboard.writeText(`${shareData.text} \n${shareData.url}`);
-    alert('📋 Workout summary copied to clipboard! Paste it to your social media or chat.');
+    navigator.clipboard.writeText(`${message}\n\n${window.location.href}`);
+    alert('📋 Workout summary copied to clipboard!');
   }
 }
+
 
 // 2. Share Weekly Achievement as Text Status
 
@@ -703,7 +703,8 @@ async function shareTextStatus() {
 
   const estimatedBurn = (totalEx * 45) + (totalCardio * 180);
 
-  const text = 
+  // Clean text body without hardcoded trailing URL
+  const messageBody = 
 `⚡ Most people wait for motivation. Discipline gets the reps done.
 
 My Weekly Vitals via IronForge:
@@ -711,26 +712,25 @@ My Weekly Vitals via IronForge:
 🏃 ${totalCardio} cardiovascular fat-burn sessions
 🔥 ~${estimatedBurn} kcal active expenditure
 
-What did your workout consistency look like this week? Prioritize your health. 
-
-Track your split privately here:
-${window.location.href}`;
+What did your workout consistency look like this week? Prioritize your health.`;
 
   if (navigator.share) {
     try {
       await navigator.share({
         title: 'Weekly Discipline & Workout Report',
-        text: text,
-        url: window.location.href
+        text: messageBody,
+        url: window.location.href // Browser appends the URL once
       });
     } catch (err) {
       console.log('Share dismissed');
     }
   } else {
-    navigator.clipboard.writeText(text);
-    alert('📋 Health update copied to clipboard! Paste it on WhatsApp Status, LinkedIn, or X.');
+    // Clipboard fallback appends URL exactly once
+    navigator.clipboard.writeText(`${messageBody}\n\nTrack your split privately:\n${window.location.href}`);
+    alert('📋 Health report copied to clipboard! Paste it on WhatsApp, LinkedIn, or X.');
   }
 }
+
 
 // 3. Generate a Visual Story/Post Card using Canvas & Share Image
 
