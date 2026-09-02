@@ -1083,7 +1083,85 @@ if (isIos && !isStandalone) {
   installBtn.innerHTML = `<span>Guide</span>`;
 }
 
-// --- 13. BOOTSTRAP INITIALIZATION ---
+// --- 13. DATA IMPORT /EXPORT---
+// --- EXPORT ROUTINE JSON ---
+function exportWorkoutPlan() {
+  const exportPayload = {
+    appName: "IronForge",
+    version: "2.0",
+    exportedAt: new Date().toISOString(),
+    routines: routines,
+    vitals: {
+      startWeight: localStorage.getItem('ironforge_start_weight') || 85,
+      currentWeight: localStorage.getItem('ironforge_weight') || 82,
+      targetWeight: localStorage.getItem('ironforge_target_weight') || 75,
+      deficit: localStorage.getItem('ironforge_deficit') || 450
+    }
+  };
+
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `ironforge-routine-${getTodayDateString()}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
+// --- IMPORT ROUTINE JSON ---
+function importWorkoutPlan(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const importedData = JSON.parse(e.target.result);
+
+      // Schema sanity validation
+      if (!importedData.routines || !Array.isArray(importedData.routines) || importedData.routines.length !== 7) {
+        throw new Error("Invalid format. File must contain a 7-day routine array.");
+      }
+
+      const isValidStructure = importedData.routines.every(r => r.id && r.day && Array.isArray(r.exercises));
+      if (!isValidStructure) {
+        throw new Error("Missing required day or exercise attributes.");
+      }
+
+      if (confirm("Importing will replace your current workout schedule and vitals. Continue?")) {
+        routines = importedData.routines;
+        saveRoutines();
+
+        if (importedData.vitals) {
+          localStorage.setItem('ironforge_start_weight', importedData.vitals.startWeight);
+          localStorage.setItem('ironforge_weight', importedData.vitals.currentWeight);
+          localStorage.setItem('ironforge_target_weight', importedData.vitals.targetWeight);
+          localStorage.setItem('ironforge_deficit', importedData.vitals.deficit);
+
+          document.getElementById('startWeight').value = importedData.vitals.startWeight;
+          document.getElementById('currentWeight').value = importedData.vitals.currentWeight;
+          document.getElementById('targetWeight').value = importedData.vitals.targetWeight;
+          document.getElementById('userDeficit').value = importedData.vitals.deficit;
+        }
+
+        renderDayTabs();
+        renderRoutine();
+        updateProgress();
+        calcMacros();
+        alert("✅ Workout plan successfully restored!");
+      }
+    } catch (err) {
+      alert("❌ Import failed: " + err.message);
+    } finally {
+      // Clear input so the same file can be re-uploaded if modified
+      event.target.value = "";
+    }
+  };
+  reader.readAsText(file);
+}
+
+
+// --- 14. BOOTSTRAP INITIALIZATION ---
 document.getElementById('startWeight').value = localStorage.getItem('ironforge_start_weight') || 85;
 document.getElementById('currentWeight').value = localStorage.getItem('ironforge_weight') || 82;
 document.getElementById('targetWeight').value = localStorage.getItem('ironforge_target_weight') || 75;
@@ -1110,3 +1188,4 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(console.error);
   });
 }
+          
