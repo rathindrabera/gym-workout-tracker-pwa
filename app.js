@@ -138,51 +138,61 @@ function saveCompleted() {
 }
 
 // --- 3. PROFILE MANAGEMENT & BIOMETRIC ENGINE ---
-function checkInitialProfile() {
+window.checkInitialProfile = function() {
   if (!userProfile) {
     setTimeout(() => openProfileModal(true), 300);
   } else {
     syncProfileUI();
   }
-}
+};
 
-function openProfileModal(isForced = false) {
+window.openProfileModal = function(isForced = false) {
   if (userProfile) {
-    document.getElementById('profName').value = userProfile.name || "";
-    document.getElementById('profAge').value = userProfile.age || "";
-    document.getElementById('profGender').value = userProfile.gender || "male";
-    document.getElementById('profHeight').value = userProfile.height || "";
-    document.getElementById('profStartWeight').value = userProfile.startWeight || "";
-    document.getElementById('profTargetWeight').value = userProfile.targetWeight || "";
-    document.getElementById('profEmail').value = userProfile.email || "";
-    document.getElementById('profPhone').value = userProfile.phone || "";
+    if (document.getElementById('profName')) document.getElementById('profName').value = userProfile.name || "";
+    if (document.getElementById('profAge')) document.getElementById('profAge').value = userProfile.age || "";
+    if (document.getElementById('profGender')) document.getElementById('profGender').value = userProfile.gender || "male";
+    if (document.getElementById('profHeight')) document.getElementById('profHeight').value = userProfile.height || "";
+    if (document.getElementById('profStartWeight')) document.getElementById('profStartWeight').value = userProfile.startWeight || "";
+    if (document.getElementById('profTargetWeight')) document.getElementById('profTargetWeight').value = userProfile.targetWeight || "";
+    if (document.getElementById('profEmail')) document.getElementById('profEmail').value = userProfile.email || "";
+    if (document.getElementById('profPhone')) document.getElementById('profPhone').value = userProfile.phone || "";
   }
   const modal = document.getElementById('profileModal');
   if (modal) modal.classList.remove('hidden');
-}
+};
 
-function closeProfileModal() {
+window.closeProfileModal = function() {
   if (!userProfile) {
-    const name = document.getElementById('profName').value.trim();
+    const nameEl = document.getElementById('profName');
+    const name = nameEl ? nameEl.value.trim() : "";
     if (!name) {
-      alert("Please configure your profile name to initialize your training split.");
+      alert("Please enter your name to initialize your profile.");
       return;
     }
     saveUserProfile();
   }
   const modal = document.getElementById('profileModal');
   if (modal) modal.classList.add('hidden');
-}
+};
 
-function saveUserProfile() {
-  const name = document.getElementById('profName').value.trim() || "Athlete";
-  const age = parseInt(document.getElementById('profAge').value) || 25;
-  const gender = document.getElementById('profGender').value || "male";
-  const height = parseFloat(document.getElementById('profHeight').value) || 175;
-  const startWeight = parseFloat(document.getElementById('profStartWeight').value) || 85;
-  const targetWeight = parseFloat(document.getElementById('profTargetWeight').value) || 75;
-  const email = document.getElementById('profEmail').value.trim();
-  const phone = document.getElementById('profPhone').value.trim();
+window.saveUserProfile = function() {
+  const nameEl = document.getElementById('profName');
+  const ageEl = document.getElementById('profAge');
+  const genderEl = document.getElementById('profGender');
+  const heightEl = document.getElementById('profHeight');
+  const startWeightEl = document.getElementById('profStartWeight');
+  const targetWeightEl = document.getElementById('profTargetWeight');
+  const emailEl = document.getElementById('profEmail');
+  const phoneEl = document.getElementById('profPhone');
+
+  const name = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : "Athlete";
+  const age = (ageEl && parseInt(ageEl.value)) ? parseInt(ageEl.value) : 25;
+  const gender = (genderEl && genderEl.value) ? genderEl.value : "male";
+  const height = (heightEl && parseFloat(heightEl.value)) ? parseFloat(heightEl.value) : 175;
+  const startWeight = (startWeightEl && parseFloat(startWeightEl.value)) ? parseFloat(startWeightEl.value) : 85;
+  const targetWeight = (targetWeightEl && parseFloat(targetWeightEl.value)) ? parseFloat(targetWeightEl.value) : 75;
+  const email = (emailEl && emailEl.value) ? emailEl.value.trim() : "";
+  const phone = (phoneEl && phoneEl.value) ? phoneEl.value.trim() : "";
 
   userProfile = {
     name,
@@ -198,17 +208,14 @@ function saveUserProfile() {
 
   localStorage.setItem('ironforge_user_profile', JSON.stringify(userProfile));
 
-  // FORCE SYNC: Profile goals overwrite the Planner's baseline and target
+  // Direct sync to vitals keys
   localStorage.setItem('ironforge_start_weight', startWeight);
   localStorage.setItem('ironforge_target_weight', targetWeight);
-  
-  // Only overwrite Current Weight if it's the user's very first time, 
-  // so we don't accidentally erase their weekly progress check-ins.
   if (!localStorage.getItem('ironforge_weight')) {
     localStorage.setItem('ironforge_weight', startWeight);
   }
 
-  // Instantly update the HTML input boxes on the Planner Card
+  // Update inputs if rendered in DOM
   const startInput = document.getElementById('startWeight');
   const targetInput = document.getElementById('targetWeight');
   const currInput = document.getElementById('currentWeight');
@@ -217,15 +224,25 @@ function saveUserProfile() {
   if (targetInput) targetInput.value = targetWeight;
   if (currInput && !currInput.value) currInput.value = startWeight;
 
-  // Refresh UI and recalculate the BMR logic
   syncProfileUI();
   updateRoutineSourceDropdown();
   calcMacros();
-  
+
   const modal = document.getElementById('profileModal');
   if (modal) modal.classList.add('hidden');
-}
+};
 
+function syncProfileUI() {
+  if (!userProfile) return;
+  const initials = userProfile.name.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'IF';
+  const avatar = document.getElementById('userAvatarBadge');
+  if (avatar) avatar.textContent = initials;
+
+  const nameDisplay = document.getElementById('headerUserName');
+  if (nameDisplay) {
+    nameDisplay.textContent = userProfile.name ? `(${userProfile.name})` : '';
+  }
+}
 
 function calculatePreciseBMR(weightKg, heightCm, ageYears, gender) {
   const s = gender === 'female' ? -161 : 5;
@@ -233,7 +250,7 @@ function calculatePreciseBMR(weightKg, heightCm, ageYears, gender) {
 }
 
 // --- 4. MULTI-ROUTINE PROFILE SWITCHER & DELETION ---
-function updateRoutineSourceDropdown() {
+window.updateRoutineSourceDropdown = function() {
   const select = document.getElementById('routineSourceSelect');
   if (!select) return;
 
@@ -252,7 +269,7 @@ function updateRoutineSourceDropdown() {
 
   select.value = activeRoutineSource;
   syncActiveSourceUI(activeRoutineSource);
-}
+};
 
 function syncActiveSourceUI(sourceKey) {
   const badge = document.getElementById('activePlanOwnerBadge');
@@ -267,7 +284,7 @@ function syncActiveSourceUI(sourceKey) {
   }
 }
 
-function switchRoutineSource(sourceKey) {
+window.switchRoutineSource = function(sourceKey) {
   activeRoutineSource = sourceKey;
   localStorage.setItem('ironforge_active_source', sourceKey);
 
@@ -281,9 +298,9 @@ function switchRoutineSource(sourceKey) {
   renderDayTabs();
   renderRoutine();
   updateProgress();
-}
+};
 
-function deleteActiveImportedRoutine() {
+window.deleteActiveImportedRoutine = function() {
   if (activeRoutineSource === 'mine') return;
 
   const planToDelete = importedRoutinesStore[activeRoutineSource];
@@ -302,10 +319,10 @@ function deleteActiveImportedRoutine() {
   switchRoutineSource('mine');
 
   alert(`🗑️ Removed ${planName}'s routine.`);
-}
+};
 
 // --- 5. NAVIGATION & TABS ---
-function switchTab(tab) {
+window.switchTab = function(tab) {
   if (tab === 'tracker') {
     document.getElementById('trackerTab').classList.remove('hidden');
     document.getElementById('analyticsTab').classList.add('hidden');
@@ -322,9 +339,9 @@ function switchTab(tab) {
       calcMacros();
     }, 50);
   }
-}
+};
 
-function renderDayTabs() {
+window.renderDayTabs = function() {
   const container = document.getElementById('dayTabs');
   if (!container) return;
   const ordered = [...routines.slice(1), routines[0]];
@@ -343,17 +360,17 @@ function renderDayTabs() {
       </button>
     `;
   }).join('');
-}
+};
 
-function setDay(id) {
+window.setDay = function(id) {
   selectedDay = id;
   renderDayTabs();
   renderRoutine();
   updateProgress();
-}
+};
 
 // --- 6. RENDER ROUTINE & TREADMILL ---
-function renderRoutine() {
+window.renderRoutine = function() {
   const r = routines.find(x => x.id === selectedDay);
   const container = document.getElementById('routineCard');
   const tmContainer = document.getElementById('treadmillCard');
@@ -457,10 +474,10 @@ function renderRoutine() {
     </div>
     <p class="text-xs text-slate-400">${r.treadmill.title || 'Cardio'} — ${r.treadmill.desc || 'None scheduled'}</p>
   `;
-}
+};
 
 // --- 7. DAY CONFIGURATION MODAL ---
-function openDayConfigModal() {
+window.openDayConfigModal = function() {
   const r = routines.find(x => x.id === selectedDay);
   if (!r) return;
   document.getElementById('dayConfigTitle').innerHTML = `<i class="fi fi-sr-settings text-sky-400 text-xs"></i> <span>Customize ${r.day}</span>`;
@@ -474,27 +491,28 @@ function openDayConfigModal() {
 
   setModalDayType(r.isRest);
   document.getElementById('dayConfigModal').classList.remove('hidden');
-}
+};
 
-function closeDayConfigModal() {
-  document.getElementById('dayConfigModal').classList.add('hidden');
-}
+window.closeDayConfigModal = function() {
+  const modal = document.getElementById('dayConfigModal');
+  if (modal) modal.classList.add('hidden');
+};
 
-function setModalDayType(isRest) {
+window.setModalDayType = function(isRest) {
   modalIsRest = isRest;
   const btnWorkout = document.getElementById('btnStatusWorkout');
   const btnRest = document.getElementById('btnStatusRest');
 
   if (isRest) {
-    btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-amber-500/50 bg-amber-500/20 text-amber-300 flex items-center justify-center gap-1.5";
-    btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500 flex items-center justify-center gap-1.5";
+    if (btnRest) btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-amber-500/50 bg-amber-500/20 text-amber-300 flex items-center justify-center gap-1.5";
+    if (btnWorkout) btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500 flex items-center justify-center gap-1.5";
   } else {
-    btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 flex items-center justify-center gap-1.5";
-    btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500 flex items-center justify-center gap-1.5";
+    if (btnWorkout) btnWorkout.className = "flex-1 py-2 rounded-lg font-bold border border-emerald-500/50 bg-emerald-500/20 text-emerald-300 flex items-center justify-center gap-1.5";
+    if (btnRest) btnRest.className = "flex-1 py-2 rounded-lg font-bold border border-slate-800 bg-slate-850 text-slate-500 flex items-center justify-center gap-1.5";
   }
-}
+};
 
-function saveDayConfigChanges() {
+window.saveDayConfigChanges = function() {
   const r = routines.find(x => x.id === selectedDay);
   if (!r) return;
   r.isRest = modalIsRest;
@@ -514,18 +532,18 @@ function saveDayConfigChanges() {
   renderDayTabs();
   renderRoutine();
   updateProgress();
-}
+};
 
 // --- 8. EXERCISE MODAL ---
-function openModalForNew() {
+window.openModalForNew = function() {
   editingExerciseIndex = null;
   document.getElementById('modalTitle').innerHTML = `<i class="fi fi-sr-plus text-sky-400 text-xs"></i> <span>Add New Exercise</span>`;
   document.getElementById('modalExName').value = "";
   renderModalSets([{ r: 10, w: "20kg" }, { r: 8, w: "25kg" }, { r: 6, w: "30kg" }]);
   document.getElementById('editModal').classList.remove('hidden');
-}
+};
 
-function openModalForEdit(idx) {
+window.openModalForEdit = function(idx) {
   editingExerciseIndex = idx;
   const r = routines.find(x => x.id === selectedDay);
   if (!r) return;
@@ -534,14 +552,16 @@ function openModalForEdit(idx) {
   document.getElementById('modalExName').value = ex.name;
   renderModalSets(ex.sets);
   document.getElementById('editModal').classList.remove('hidden');
-}
+};
 
-function closeModal() {
-  document.getElementById('editModal').classList.add('hidden');
-}
+window.closeModal = function() {
+  const modal = document.getElementById('editModal');
+  if (modal) modal.classList.add('hidden');
+};
 
-function renderModalSets(sets) {
+window.renderModalSets = function(sets) {
   const container = document.getElementById('modalSetsContainer');
+  if (!container) return;
   container.innerHTML = sets.map((s, i) => `
     <div class="flex items-center gap-2 set-row">
       <span class="text-[10px] text-slate-500 font-bold w-10">Set ${i + 1}</span>
@@ -550,10 +570,11 @@ function renderModalSets(sets) {
       <button onclick="this.parentElement.remove()" class="text-rose-400 text-xs px-1">&times;</button>
     </div>
   `).join('');
-}
+};
 
-function addSetField() {
+window.addSetField = function() {
   const container = document.getElementById('modalSetsContainer');
+  if (!container) return;
   const count = container.querySelectorAll('.set-row').length + 1;
   const div = document.createElement('div');
   div.className = "flex items-center gap-2 set-row";
@@ -564,9 +585,9 @@ function addSetField() {
     <button onclick="this.parentElement.remove()" class="text-rose-400 text-xs px-1">&times;</button>
   `;
   container.appendChild(div);
-}
+};
 
-function saveModalChanges() {
+window.saveModalChanges = function() {
   const name = document.getElementById('modalExName').value.trim();
   if (!name) return alert('Please enter an exercise name.');
 
@@ -591,9 +612,9 @@ function saveModalChanges() {
   renderDayTabs();
   renderRoutine();
   updateProgress();
-}
+};
 
-function deleteExercise(idx) {
+window.deleteExercise = function(idx) {
   if (!confirm("Delete this exercise?")) return;
   const r = routines.find(x => x.id === selectedDay);
   if (!r) return;
@@ -601,17 +622,17 @@ function deleteExercise(idx) {
   saveRoutines();
   renderRoutine();
   updateProgress();
-}
+};
 
 // --- 9. PROGRESS & LOGGING ---
-function toggleDone(rawKey) {
+window.toggleDone = function(rawKey) {
   const key = getDateKey(rawKey);
   completedLog[key] = !completedLog[key];
   saveCompleted();
   renderRoutine();
-}
+};
 
-function updateProgress() {
+window.updateProgress = function() {
   const r = routines.find(x => x.id === selectedDay);
   const progressBar = document.getElementById('progressBar');
   const progressText = document.getElementById('progressText');
@@ -641,7 +662,7 @@ function updateProgress() {
   const pct = Math.round((done / total) * 100);
   progressBar.style.width = `${pct}%`;
   progressText.textContent = `${pct}% Complete (${done}/${total})`;
-}
+};
 
 // --- 10. TIME-SERIES ANALYTICS ENGINE & GRAPH ---
 function getHistoricalStats(daysRange = 7) {
@@ -672,7 +693,7 @@ function getHistoricalStats(daysRange = 7) {
   return { liftCount, cardioCount, activeDays: activeDates.size, calorieBurn, dailyPoints };
 }
 
-function setAnalyticsTimeframe(days) {
+window.setAnalyticsTimeframe = function(days) {
   activeAnalyticsFilter = days;
   document.querySelectorAll('.timeframe-btn').forEach(b => {
     b.className = "timeframe-btn flex-1 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-800 text-slate-400";
@@ -680,9 +701,9 @@ function setAnalyticsTimeframe(days) {
   const activeBtn = document.getElementById(`btn-timeframe-${days}`);
   if (activeBtn) activeBtn.className = "timeframe-btn flex-1 py-1.5 rounded-lg text-xs font-bold transition-all bg-sky-500 text-slate-950 shadow";
   renderAnalytics();
-}
+};
 
-function renderAnalytics() {
+window.renderAnalytics = function() {
   const stats = getHistoricalStats(activeAnalyticsFilter);
 
   if (document.getElementById('statCompletedEx')) {
@@ -723,7 +744,7 @@ function renderAnalytics() {
   }
 
   renderActivityChart(stats.dailyPoints);
-}
+};
 
 function renderActivityChart(points) {
   const canvas = document.getElementById('analyticsChart');
@@ -802,12 +823,10 @@ window.calcMacros = function() {
   const targetInput = document.getElementById('targetWeight');
   const deficitInput = document.getElementById('userDeficit');
 
-  if (!currentInput || !deficitInput) return;
-
-  const currentW = parseFloat(currentInput.value) || (userProfile?.startWeight || 82);
-  const targetW = parseFloat(targetInput?.value) || (userProfile?.targetWeight || 75);
-  const startW = parseFloat(startInput?.value) || (userProfile?.startWeight || 85);
-  const deficit = parseFloat(deficitInput.value) || 450;
+  const startW = parseFloat(startInput ? startInput.value : (userProfile?.startWeight || 85)) || 85;
+  const currentW = parseFloat(currentInput ? currentInput.value : (userProfile?.startWeight || 82)) || 82;
+  const targetW = parseFloat(targetInput ? targetInput.value : (userProfile?.targetWeight || 75)) || 75;
+  const deficit = parseFloat(deficitInput ? deficitInput.value : 450) || 450;
 
   localStorage.setItem('ironforge_start_weight', startW);
   localStorage.setItem('ironforge_weight', currentW);
@@ -869,7 +888,7 @@ window.calcMacros = function() {
       }
     } else {
       if (badgeEl) badgeEl.textContent = "Goal Hit! 🏆";
-      if (projectionEl) projectionEl.innerHTML = `<span class="text-emerald-400 font-bold">Goal achieved!</span> Successfully dropped from ${startW} kg to ${currentW} kg!`;
+      if (projectionEl) projectionEl.innerHTML = `<span class="text-emerald-400 font-bold">Goal achieved!</span> Successfully reached your target weight!`;
     }
   } else {
     if (progressBar) progressBar.style.width = '0%';
@@ -890,7 +909,7 @@ window.closeScienceModal = function() {
 };
 
 // --- 12. DATA PURGE & RESET ENGINE ---
-function clearAllWorkoutsAndData() {
+window.clearAllWorkoutsAndData = function() {
   const confirmed = confirm(
     "⚠️ Clear all workout routines, exercises, and historical analytics?\n\nThis will erase all logged history and cannot be undone."
   );
@@ -931,7 +950,7 @@ function clearAllWorkoutsAndData() {
   calcMacros();
 
   alert("🧹 All workouts, checkmarks, and tracking history have been cleared.");
-}
+};
 
 // --- 13. INTERACTIVE DEMO TOUR ---
 let currentTourStep = 0;
@@ -958,14 +977,14 @@ const tourSteps = [
   }
 ];
 
-function startDemoTour(force = false) {
+window.startDemoTour = function(force = false) {
   if (!force && localStorage.getItem('ironforge_tour_completed')) return;
   currentTourStep = 0;
   switchTab('tracker');
   const modal = document.getElementById('tourModal');
   if (modal) modal.classList.remove('hidden');
   renderTourStep();
-}
+};
 
 function renderTourStep() {
   document.querySelectorAll('.tour-focus').forEach(el => el.classList.remove('tour-focus'));
@@ -997,9 +1016,11 @@ function renderTourStep() {
   document.getElementById('tourText').textContent = step.text;
 
   const dotsContainer = document.getElementById('tourDots');
-  dotsContainer.innerHTML = tourSteps.map((_, i) => `
-    <span class="w-2.5 h-2.5 rounded-full ${i === currentTourStep ? 'bg-sky-400' : 'bg-slate-600'}"></span>
-  `).join('');
+  if (dotsContainer) {
+    dotsContainer.innerHTML = tourSteps.map((_, i) => `
+      <span class="w-2.5 h-2.5 rounded-full ${i === currentTourStep ? 'bg-sky-400' : 'bg-slate-600'}"></span>
+    `).join('');
+  }
 
   document.getElementById('tourPrevBtn').classList.toggle('hidden', currentTourStep === 0);
   document.getElementById('tourNextBtn').innerHTML = currentTourStep === tourSteps.length - 1 
@@ -1007,31 +1028,31 @@ function renderTourStep() {
     : `<span>Next</span> <i class="fi fi-sr-arrow-right text-[10px]"></i>`;
 }
 
-function nextTourStep() {
+window.nextTourStep = function() {
   if (currentTourStep < tourSteps.length - 1) {
     currentTourStep++;
     renderTourStep();
   } else {
     endTour();
   }
-}
+};
 
-function prevTourStep() {
+window.prevTourStep = function() {
   if (currentTourStep > 0) {
     currentTourStep--;
     renderTourStep();
   }
-}
+};
 
-function endTour() {
+window.endTour = function() {
   document.querySelectorAll('.tour-focus').forEach(el => el.classList.remove('tour-focus'));
   const modal = document.getElementById('tourModal');
   if (modal) modal.classList.add('hidden');
   localStorage.setItem('ironforge_tour_completed', 'true');
-}
+};
 
 // --- 14. SOCIAL MEDIA SHARING & STORY GENERATOR ---
-async function shareTodayProgress() {
+window.shareTodayProgress = async function() {
   const r = routines.find(x => x.id === selectedDay);
   if (!r) return;
   const total = r.exercises.length;
@@ -1056,9 +1077,9 @@ async function shareTodayProgress() {
     navigator.clipboard.writeText(`${message}\n\n${window.location.href}`);
     alert('📋 Workout summary copied to clipboard!');
   }
-}
+};
 
-async function shareTextStatus() {
+window.shareTextStatus = async function() {
   const weeklyStats = getHistoricalStats(7);
   const startW = parseFloat(localStorage.getItem('ironforge_start_weight')) || 0;
   const currentW = parseFloat(localStorage.getItem('ironforge_weight')) || 0;
@@ -1096,9 +1117,9 @@ What did your workout consistency look like this week? Prioritize your health.`;
     navigator.clipboard.writeText(`${messageBody}\n\nTrack your split privately:\n${window.location.href}`);
     alert('📋 Health report copied to clipboard!');
   }
-}
+};
 
-async function generateAndShareBadge() {
+window.generateAndShareBadge = async function() {
   const stats = getHistoricalStats(7);
   let totalPlannedEx = 0;
   routines.forEach(r => { totalPlannedEx += r.exercises.length; });
@@ -1265,10 +1286,10 @@ async function generateAndShareBadge() {
       alert('🔥 High-res transformation story downloaded! Post it on Instagram / WhatsApp to inspire your circle.');
     }
   }, 'image/png');
-}
+};
 
 // --- 15. IMPORT & EXPORT ENGINE ---
-function exportWorkoutPlan() {
+window.exportWorkoutPlan = function() {
   const exportPayload = {
     appName: "IronForge",
     version: "2.5",
@@ -1301,9 +1322,9 @@ function exportWorkoutPlan() {
     document.body.removeChild(downloadAnchor);
     URL.revokeObjectURL(url);
   }, 100);
-}
+};
 
-function importWorkoutPlan(event) {
+window.importWorkoutPlan = function(event) {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
 
@@ -1340,7 +1361,7 @@ function importWorkoutPlan(event) {
     }
   };
   reader.readAsText(file);
-}
+};
 
 // --- 16. PWA INSTALL HANDLER ---
 let deferredPrompt = null;
