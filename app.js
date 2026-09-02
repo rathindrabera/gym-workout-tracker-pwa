@@ -731,87 +731,100 @@ async function generateAndShareBadge() {
 
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
-  canvas.height = 1920; // 9:16 Story aspect ratio
+  canvas.height = 1920;
   const ctx = canvas.getContext('2d');
 
-  // Background Gradient
-  const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
-  grad.addColorStop(0, '#070b12');
-  grad.addColorStop(0.5, '#0d1527');
-  grad.addColorStop(1, '#051b1a');
-  ctx.fillStyle = grad;
+  // 1. Background Fill
+  const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
+  bgGrad.addColorStop(0, '#070b12');
+  bgGrad.addColorStop(0.5, '#0b1322');
+  bgGrad.addColorStop(1, '#051918');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, 1080, 1920);
 
-  // Decorative Border & Glow
+  // 2. Outer Border Frame
   ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 12;
+  ctx.lineWidth = 14;
   ctx.strokeRect(60, 60, 960, 1800);
 
-  // App Title
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 64px sans-serif';
+  // 3. Header Texts
   ctx.textAlign = 'center';
-  ctx.fillText('IRONFORGE', 540, 300);
-
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '36px sans-serif';
-  ctx.fillText('WORKOUT & VITALS TRACKER', 540, 370);
-
-  // Main Achievement Banner
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 76px sans-serif';
-  ctx.fillText('WEEKLY GAINS UNLOCKED', 540, 650);
-
-  // Stat Boxes
-  ctx.fillStyle = '#161f2e';
-  ctx.roundRect(140, 800, 800, 240, 30);
-  ctx.fill();
   ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 90px sans-serif';
-  ctx.fillText(`${totalEx}`, 540, 920);
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '36px sans-serif';
-  ctx.fillText('Exercises Completed', 540, 990);
+  ctx.font = 'bold 64px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('IRONFORGE', 540, 290);
 
-  ctx.fillStyle = '#161f2e';
-  ctx.roundRect(140, 1100, 800, 240, 30);
-  ctx.fill();
-  ctx.fillStyle = '#10b981';
-  ctx.font = 'bold 90px sans-serif';
-  ctx.fillText(`${totalCardio} Days`, 540, 1220);
   ctx.fillStyle = '#94a3b8';
-  ctx.font = '36px sans-serif';
-  ctx.fillText('Cardio & Treadmill Sessions', 540, 1290);
+  ctx.font = '600 32px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('WORKOUT & VITALS TRACKER', 540, 355);
 
-  // Footer Branding
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '800 70px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('WEEKLY GAINS UNLOCKED', 540, 620);
+
+  // Helper to draw rounded cards cleanly
+  function drawStatCard(y, numberText, labelText, numberColor) {
+    ctx.save();
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(140, y, 800, 250, 32);
+    } else {
+      ctx.rect(140, y, 800, 250);
+    }
+    ctx.fillStyle = '#161f2e';
+    ctx.fill();
+    ctx.strokeStyle = '#2d3b55';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.closePath();
+
+    // Render Metric Value
+    ctx.fillStyle = numberColor;
+    ctx.font = '800 96px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(String(numberText), 540, y + 120);
+
+    // Render Metric Label
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 34px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(labelText, 540, y + 195);
+    ctx.restore();
+  }
+
+  // Card 1: Total Lifts (Emerald Green)
+  drawStatCard(760, totalEx, 'Total Lifts Logged', '#10b981');
+
+  // Card 2: Cardio Sessions (Cyan Blue)
+  drawStatCard(1080, `${totalCardio} Days`, 'Cardio & Treadmill Sessions', '#38bdf8');
+
+  // 4. Footer Developer Branding
   ctx.fillStyle = '#64748b';
-  ctx.font = '34px sans-serif';
-  ctx.fillText('Forged for gains by Rathindra Bera', 540, 1650);
+  ctx.font = '600 32px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('Forged for gains by Rathindra Bera', 540, 1680);
 
-  // Convert to Blob and trigger Native Share
+  // 5. Export to Image / Trigger Share
   canvas.toBlob(async (blob) => {
-    const file = new File([blob], 'ironforge-achievement.png', { type: 'image/png' });
+    if (!blob) return;
+    const file = new File([blob], 'ironforge-weekly-gains.png', { type: 'image/png' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
           files: [file],
-          title: 'My IronForge Achievement',
-          text: 'Crushing goals with IronForge! 💪'
+          title: 'IronForge Weekly Gains',
+          text: `🔥 Logged ${totalEx} lifts and ${totalCardio} cardio days on IronForge! 💪 #IronForge #Gains`
         });
-      } catch (err) {
-        console.log('Image share cancelled');
+      } catch (e) {
+        console.log('Share dismissed');
       }
     } else {
-      // Direct download fallback
       const link = document.createElement('a');
-      link.download = 'ironforge-achievement.png';
+      link.download = 'ironforge-weekly-gains.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
-      alert('🖼️ Achievement image downloaded! You can now post it to your Instagram / WhatsApp Story.');
+      alert('🖼️ Weekly summary card downloaded! Ready to upload to your Instagram or WhatsApp Story.');
     }
   }, 'image/png');
 }
+
 
 // Update the live badges whenever analytics render
 const originalRenderAnalytics = renderAnalytics;
