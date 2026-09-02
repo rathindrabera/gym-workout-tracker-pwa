@@ -84,16 +84,24 @@
   <!-- TAB 1: WORKOUT TRACKER -->
   <main id="trackerTab" class="p-4 max-w-xl mx-auto space-y-4 pt-0">
 
-    <!-- Active Routine Switcher -->
-    <div class="bg-slate-900/90 rounded-xl p-2.5 border border-slate-800 flex items-center justify-between text-xs">
-      <div class="flex items-center gap-2">
-        <i class="fi fi-sr-folder text-sky-400 text-sm"></i>
-        <span class="text-slate-400">Active Split:</span>
-        <select id="routineSourceSelect" onchange="switchRoutineSource(this.value)" class="bg-slate-800 border border-slate-700 text-sky-300 font-bold rounded-lg px-2 py-1 text-xs focus:ring-0">
+    <!-- Active Routine Switcher with Dynamic Delete Action -->
+    <div class="bg-slate-900/90 rounded-xl p-2.5 border border-slate-800 flex items-center justify-between text-xs gap-2">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <i class="fi fi-sr-folder text-sky-400 text-sm shrink-0"></i>
+        <span class="text-slate-400 shrink-0">Active Split:</span>
+        <select id="routineSourceSelect" onchange="switchRoutineSource(this.value)" class="bg-slate-800 border border-slate-700 text-sky-300 font-bold rounded-lg px-2 py-1 text-xs focus:ring-0 truncate w-full max-w-[180px]">
           <option value="mine">My Routine (Default)</option>
         </select>
       </div>
-      <span id="activePlanOwnerBadge" class="text-[10px] text-slate-500 font-semibold uppercase">Primary</span>
+      
+      <div class="flex items-center gap-2 shrink-0">
+        <span id="activePlanOwnerBadge" class="text-[10px] text-slate-500 font-semibold uppercase hidden sm:inline">Primary</span>
+        <!-- Delete Imported Routine Button (Hidden for 'mine') -->
+        <button id="deleteImportedBtn" onclick="deleteActiveImportedRoutine()" title="Delete this imported routine" class="hidden px-2 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-xs font-bold transition-all active:scale-95 flex items-center gap-1">
+          <i class="fi fi-sr-trash text-[11px] leading-none"></i>
+          <span>Delete</span>
+        </button>
+      </div>
     </div>
     
     <!-- Day Navigation -->
